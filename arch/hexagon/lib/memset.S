@@ -1,5 +1,9 @@
 /*
+<<<<<<< HEAD
  * Copyright (c) 2011 The Linux Foundation. All rights reserved.
+=======
+ * Copyright (c) 2011, The Linux Foundation. All rights reserved.
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and

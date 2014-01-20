@@ -50,8 +50,13 @@
 #include <asm/div64.h>
 #include <asm/sizes.h>
 
+<<<<<<< HEAD
 #include <asm/mach/mmc.h>
 #include <mach/msm_iomap.h>
+=======
+#include <linux/platform_data/mmc-msm_sdcc.h>
+#include <mach/dma.h>
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #include <mach/clk.h>
 #include <mach/dma.h>
 #include <mach/sdio_al.h>
@@ -5769,9 +5774,22 @@ msmsdcc_probe(struct platform_device *pdev)
 		goto clk_put;
 	}
 
+<<<<<<< HEAD
 	ret = clk_prepare_enable(host->clk);
+=======
+	ret = clk_prepare(host->pclk);
 	if (ret)
 		goto clk_put;
+
+	ret = clk_prepare(host->clk);
+	if (ret)
+		goto clk_unprepare_p;
+
+	/* Enable clocks */
+	ret = msmsdcc_enable_clocks(host);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
+	if (ret)
+		goto clk_unprepare;
 
 	host->clk_rate = clk_get_rate(host->clk);
 	if (!host->clk_rate)
@@ -6142,11 +6160,19 @@ msmsdcc_probe(struct platform_device *pdev)
  vreg_deinit:
 	msmsdcc_vreg_init(host, false);
  clk_disable:
+<<<<<<< HEAD
 	clk_disable(host->clk);
 	msmsdcc_msm_bus_unregister(host);
  pm_qos_remove:
 	if (host->cpu_dma_latency)
 		pm_qos_remove_request(&host->pm_qos_req_dma);
+=======
+	msmsdcc_disable_clocks(host, 0);
+ clk_unprepare:
+	clk_unprepare(host->clk);
+ clk_unprepare_p:
+	clk_unprepare(host->pclk);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
  clk_put:
 	clk_put(host->clk);
  pclk_disable:
@@ -6174,6 +6200,7 @@ msmsdcc_probe(struct platform_device *pdev)
 	return ret;
 }
 
+<<<<<<< HEAD
 static int msmsdcc_remove(struct platform_device *pdev)
 {
 	struct mmc_host *mmc = mmc_get_drvdata(pdev);
@@ -6374,13 +6401,20 @@ static inline void msmsdcc_ungate_clock(struct msmsdcc_host *host)
 }
 #endif
 
+=======
+#ifdef CONFIG_PM
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 static int
 msmsdcc_runtime_suspend(struct device *dev)
 {
+<<<<<<< HEAD
 	struct mmc_host *mmc = dev_get_drvdata(dev);
 	struct msmsdcc_host *host = mmc_priv(mmc);
 	int rc = 0;
 	unsigned long flags;
+=======
+	struct mmc_host *mmc = mmc_get_drvdata(dev);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	if (host->plat->is_sdio_al_client) {
 		rc = 0;
@@ -6392,6 +6426,7 @@ msmsdcc_runtime_suspend(struct device *dev)
 		host->sdcc_suspending = 1;
 		mmc->suspend_task = current;
 
+<<<<<<< HEAD
 		/*
 		 * MMC core thinks that host is disabled by now since
 		 * runtime suspend is scheduled after msmsdcc_disable()
@@ -6438,6 +6473,13 @@ out:
 	/* set bus bandwidth to 0 immediately */
 	msmsdcc_msm_bus_cancel_work_and_set_vote(host, NULL);
 	return rc;
+=======
+		msmsdcc_writel(host, 0, MMCIMASK0);
+		if (host->clks_on)
+			msmsdcc_disable_clocks(host, 0);
+	}
+	return 0;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 static int
@@ -6479,7 +6521,15 @@ msmsdcc_runtime_resume(struct device *dev)
 				wake_lock_timeout(&host->sdio_wlock, 1);
 		}
 
+<<<<<<< HEAD
 		wake_unlock(&host->sdio_suspend_wlock);
+=======
+		if (host->stat_irq)
+			enable_irq(host->stat_irq);
+#if BUSCLK_PWRSAVE
+		msmsdcc_disable_clocks(host, 1);
+#endif
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	}
 	host->pending_resume = false;
 	pr_debug("%s: %s: end\n", mmc_hostname(mmc), __func__);

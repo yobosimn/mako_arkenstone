@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 config ARM_GIC
 	select IRQ_DOMAIN
 	select MULTI_IRQ_HANDLER
@@ -26,6 +27,8 @@ config ARM_VIC_NR
 	  The maximum number of VICs available in the system, for
 	  power management.
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 config ICST
 	bool
 
@@ -46,6 +49,7 @@ config SHARP_PARAM
 config SHARP_SCOOP
 	bool
 
+<<<<<<< HEAD
 config FIQ_GLUE
 	bool
 	select FIQ
@@ -95,3 +99,7 @@ config FIQ_DEBUGGER_CONSOLE_DEFAULT_ENABLE
 	help
 	  If enabled, this puts the fiq debugger into console mode by default.
 	  Otherwise, the fiq debugger will start out in debug mode.
+=======
+config TI_PRIV_EDMA
+	bool
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be

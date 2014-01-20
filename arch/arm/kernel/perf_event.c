@@ -12,22 +12,17 @@
  */
 #define pr_fmt(fmt) "hw perfevents: " fmt
 
-#include <linux/bitmap.h>
-#include <linux/interrupt.h>
 #include <linux/kernel.h>
-#include <linux/export.h>
-#include <linux/perf_event.h>
 #include <linux/platform_device.h>
-#include <linux/spinlock.h>
+#include <linux/pm_runtime.h>
 #include <linux/uaccess.h>
 #include <linux/irq.h>
 
-#include <asm/cputype.h>
-#include <asm/irq.h>
 #include <asm/irq_regs.h>
 #include <asm/pmu.h>
 #include <asm/stacktrace.h>
 
+<<<<<<< HEAD
 #include <linux/cpu_pm.h>
 
 /*
@@ -81,6 +76,8 @@ EXPORT_SYMBOL_GPL(perf_num_counters);
 
 #define CACHE_OP_UNSUPPORTED		0xFFFF
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 static int
 armpmu_map_cache_event(unsigned (*cache_map)
 				      [PERF_COUNT_HW_CACHE_MAX]
@@ -111,12 +108,16 @@ armpmu_map_cache_event(unsigned (*cache_map)
 }
 
 static int
-armpmu_map_event(const unsigned (*event_map)[PERF_COUNT_HW_MAX], u64 config)
+armpmu_map_hw_event(const unsigned (*event_map)[PERF_COUNT_HW_MAX], u64 config)
 {
 	int mapping;
 
 	if (config >= PERF_COUNT_HW_MAX)
+<<<<<<< HEAD
 		return -ENOENT;
+=======
+		return -EINVAL;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	mapping = (*event_map)[config];
 	return mapping == HW_OP_UNSUPPORTED ? -ENOENT : mapping;
@@ -128,6 +129,7 @@ armpmu_map_raw_event(u32 raw_event_mask, u64 config)
 	return (int)(config & raw_event_mask);
 }
 
+<<<<<<< HEAD
 static int map_cpu_event(struct perf_event *event,
 			 const unsigned (*event_map)[PERF_COUNT_HW_MAX],
 			 unsigned (*cache_map)
@@ -135,12 +137,22 @@ static int map_cpu_event(struct perf_event *event,
 					[PERF_COUNT_HW_CACHE_OP_MAX]
 					[PERF_COUNT_HW_CACHE_RESULT_MAX],
 			 u32 raw_event_mask)
+=======
+int
+armpmu_map_event(struct perf_event *event,
+		 const unsigned (*event_map)[PERF_COUNT_HW_MAX],
+		 const unsigned (*cache_map)
+				[PERF_COUNT_HW_CACHE_MAX]
+				[PERF_COUNT_HW_CACHE_OP_MAX]
+				[PERF_COUNT_HW_CACHE_RESULT_MAX],
+		 u32 raw_event_mask)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 {
 	u64 config = event->attr.config;
 
 	switch (event->attr.type) {
 	case PERF_TYPE_HARDWARE:
-		return armpmu_map_event(event_map, config);
+		return armpmu_map_hw_event(event_map, config);
 	case PERF_TYPE_HW_CACHE:
 		return armpmu_map_cache_event(cache_map, config);
 	case PERF_TYPE_RAW:
@@ -150,15 +162,17 @@ static int map_cpu_event(struct perf_event *event,
 	return -ENOENT;
 }
 
-int
-armpmu_event_set_period(struct perf_event *event,
-			struct hw_perf_event *hwc,
-			int idx)
+int armpmu_event_set_period(struct perf_event *event)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
+	struct hw_perf_event *hwc = &event->hw;
 	s64 left = local64_read(&hwc->period_left);
 	s64 period = hwc->sample_period;
 	int ret = 0;
+
+	/* The period may have been changed by PERF_EVENT_IOC_PERIOD */
+	if (unlikely(period != hwc->last_period))
+		left = period - (hwc->last_period - left);
 
 	if (unlikely(left <= -period)) {
 		left = period;
@@ -179,24 +193,22 @@ armpmu_event_set_period(struct perf_event *event,
 
 	local64_set(&hwc->prev_count, (u64)-left);
 
-	armpmu->write_counter(idx, (u64)(-left) & 0xffffffff);
+	armpmu->write_counter(event, (u64)(-left) & 0xffffffff);
 
 	perf_event_update_userpage(event);
 
 	return ret;
 }
 
-u64
-armpmu_event_update(struct perf_event *event,
-		    struct hw_perf_event *hwc,
-		    int idx)
+u64 armpmu_event_update(struct perf_event *event)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
+	struct hw_perf_event *hwc = &event->hw;
 	u64 delta, prev_raw_count, new_raw_count;
 
 again:
 	prev_raw_count = local64_read(&hwc->prev_count);
-	new_raw_count = armpmu->read_counter(idx);
+	new_raw_count = armpmu->read_counter(event);
 
 	if (local64_cmpxchg(&hwc->prev_count, prev_raw_count,
 			     new_raw_count) != prev_raw_count)
@@ -213,13 +225,7 @@ again:
 static void
 armpmu_read(struct perf_event *event)
 {
-	struct hw_perf_event *hwc = &event->hw;
-
-	/* Don't read disabled counters! */
-	if (hwc->idx < 0)
-		return;
-
-	armpmu_event_update(event, hwc, hwc->idx);
+	armpmu_event_update(event);
 }
 
 static void
@@ -233,15 +239,13 @@ armpmu_stop(struct perf_event *event, int flags)
 	 * PERF_EF_UPDATE, see comments in armpmu_start().
 	 */
 	if (!(hwc->state & PERF_HES_STOPPED)) {
-		armpmu->disable(hwc, hwc->idx);
-		barrier(); /* why? */
-		armpmu_event_update(event, hwc, hwc->idx);
+		armpmu->disable(event);
+		armpmu_event_update(event);
 		hwc->state |= PERF_HES_STOPPED | PERF_HES_UPTODATE;
 	}
 }
 
-static void
-armpmu_start(struct perf_event *event, int flags)
+static void armpmu_start(struct perf_event *event, int flags)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
 	struct hw_perf_event *hwc = &event->hw;
@@ -261,8 +265,13 @@ armpmu_start(struct perf_event *event, int flags)
 	 * get an interrupt too soon or *way* too late if the overflow has
 	 * happened since disabling.
 	 */
+<<<<<<< HEAD
 	armpmu_event_set_period(event, hwc, hwc->idx);
 	armpmu->enable(hwc, hwc->idx, event->cpu);
+=======
+	armpmu_event_set_period(event);
+	armpmu->enable(event);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 static void
@@ -272,8 +281,6 @@ armpmu_del(struct perf_event *event, int flags)
 	struct pmu_hw_events *hw_events = armpmu->get_hw_events();
 	struct hw_perf_event *hwc = &event->hw;
 	int idx = hwc->idx;
-
-	WARN_ON(idx < 0);
 
 	armpmu_stop(event, PERF_EF_UPDATE);
 	hw_events->events[idx] = NULL;
@@ -309,7 +316,7 @@ armpmu_add(struct perf_event *event, int flags)
 		}
 
 	/* If we don't have a space for the counter then finish early. */
-	idx = armpmu->get_event_idx(hw_events, hwc);
+	idx = armpmu->get_event_idx(hw_events, event);
 	if (idx < 0) {
 		err = idx;
 		goto out;
@@ -320,7 +327,7 @@ armpmu_add(struct perf_event *event, int flags)
 	 * sure it is disabled.
 	 */
 	event->hw.idx = idx;
-	armpmu->disable(hwc, idx);
+	armpmu->disable(event);
 	hw_events->events[idx] = event;
 
 	hwc->state = PERF_HES_STOPPED | PERF_HES_UPTODATE;
@@ -340,16 +347,23 @@ validate_event(struct pmu_hw_events *hw_events,
 	       struct perf_event *event)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
-	struct hw_perf_event fake_event = event->hw;
-	struct pmu *leader_pmu = event->group_leader->pmu;
 
 	if (is_software_event(event))
+<<<<<<< HEAD
 		return 1;
 
 	if (event->pmu != leader_pmu || event->state <= PERF_EVENT_STATE_OFF)
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 		return 1;
 
-	return armpmu->get_event_idx(hw_events, &fake_event) >= 0;
+	if (event->state < PERF_EVENT_STATE_OFF)
+		return 1;
+
+	if (event->state == PERF_EVENT_STATE_OFF && !event->attr.enable_on_exec)
+		return 1;
+
+	return armpmu->get_event_idx(hw_events, event) >= 0;
 }
 
 static int
@@ -380,13 +394,16 @@ validate_group(struct perf_event *event)
 	return 0;
 }
 
-static irqreturn_t armpmu_platform_irq(int irq, void *dev)
+static irqreturn_t armpmu_dispatch_irq(int irq, void *dev)
 {
 	struct arm_pmu *armpmu = (struct arm_pmu *) dev;
 	struct platform_device *plat_device = armpmu->plat_device;
 	struct arm_pmu_platdata *plat = dev_get_platdata(&plat_device->dev);
 
-	return plat->handle_irq(irq, dev, armpmu->handle_irq);
+	if (plat && plat->handle_irq)
+		return plat->handle_irq(irq, dev, armpmu->handle_irq);
+	else
+		return armpmu->handle_irq(irq, dev);
 }
 
 int
@@ -407,6 +424,7 @@ armpmu_generic_free_irq(int irq)
 static void
 armpmu_release_hardware(struct arm_pmu *armpmu)
 {
+<<<<<<< HEAD
 	int i, irq, irqs;
 	struct platform_device *pmu_device = armpmu->plat_device;
 
@@ -420,25 +438,29 @@ armpmu_release_hardware(struct arm_pmu *armpmu)
 	}
 
 	release_pmu(armpmu->type);
+=======
+	armpmu->free_irq(armpmu);
+	pm_runtime_put_sync(&armpmu->plat_device->dev);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 static int
 armpmu_reserve_hardware(struct arm_pmu *armpmu)
 {
-	struct arm_pmu_platdata *plat;
-	irq_handler_t handle_irq;
-	int i, err, irq, irqs;
+	int err;
 	struct platform_device *pmu_device = armpmu->plat_device;
 
 	if (!pmu_device)
 		return -ENODEV;
 
-	err = reserve_pmu(armpmu->type);
+	pm_runtime_get_sync(&pmu_device->dev);
+	err = armpmu->request_irq(armpmu, armpmu_dispatch_irq);
 	if (err) {
-		pr_warning("unable to reserve pmu\n");
+		armpmu_release_hardware(armpmu);
 		return err;
 	}
 
+<<<<<<< HEAD
 	plat = dev_get_platdata(&pmu_device->dev);
 	if (plat && plat->handle_irq)
 		handle_irq = armpmu_platform_irq;
@@ -491,6 +513,8 @@ armpmu_reserve_hardware(struct arm_pmu *armpmu)
 		cpumask_set_cpu(i, &armpmu->active_irqs);
 	}
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	return 0;
 }
 
@@ -519,7 +543,7 @@ __hw_perf_event_init(struct perf_event *event)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(event->pmu);
 	struct hw_perf_event *hwc = &event->hw;
-	int mapping, err;
+	int mapping;
 
 	mapping = armpmu->map_event(event);
 
@@ -548,7 +572,7 @@ __hw_perf_event_init(struct perf_event *event)
 	     event_requires_mode_exclusion(&event->attr)) {
 		pr_debug("ARM performance counters do not support "
 			 "mode exclusion\n");
-		return -EPERM;
+		return -EOPNOTSUPP;
 	}
 
 
@@ -569,14 +593,12 @@ __hw_perf_event_init(struct perf_event *event)
 		local64_set(&hwc->period_left, hwc->sample_period);
 	}
 
-	err = 0;
 	if (event->group_leader != event) {
-		err = validate_group(event);
-		if (err)
+		if (validate_group(event) != 0)
 			return -EINVAL;
 	}
 
-	return err;
+	return 0;
 }
 
 static int armpmu_event_init(struct perf_event *event)
@@ -639,12 +661,13 @@ static void armpmu_enable(struct pmu *pmu)
 	barrier();
 
 	if (enabled)
-		armpmu->start();
+		armpmu->start(armpmu);
 }
 
 static void armpmu_disable(struct pmu *pmu)
 {
 	struct arm_pmu *armpmu = to_arm_pmu(pmu);
+<<<<<<< HEAD
 	armpmu->stop();
 }
 
@@ -664,56 +687,52 @@ static void armpmu_init(struct arm_pmu *armpmu)
 }
 
 int armpmu_register(struct arm_pmu *armpmu, char *name, int type)
-{
-	armpmu_init(armpmu);
-	return perf_pmu_register(&armpmu->pmu, name, type);
+=======
+	armpmu->stop(armpmu);
 }
 
+#ifdef CONFIG_PM_RUNTIME
+static int armpmu_runtime_resume(struct device *dev)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
+{
+	struct arm_pmu_platdata *plat = dev_get_platdata(dev);
+
+<<<<<<< HEAD
 /* Include the PMU-specific implementations. */
 #include "perf_event_xscale.c"
 #include "perf_event_v6.c"
 #include "perf_event_v7.c"
 #include "perf_event_msm_krait.c"
 #include "perf_event_msm.c"
+=======
+	if (plat && plat->runtime_resume)
+		return plat->runtime_resume(dev);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
-/*
- * Ensure the PMU has sane values out of reset.
- * This requires SMP to be available, so exists as a separate initcall.
- */
-static int __init
-cpu_pmu_reset(void)
-{
-	if (cpu_pmu && cpu_pmu->reset)
-		return on_each_cpu(cpu_pmu->reset, NULL, 1);
 	return 0;
 }
-arch_initcall(cpu_pmu_reset);
 
-/*
- * PMU platform driver and devicetree bindings.
- */
-static struct of_device_id armpmu_of_device_ids[] = {
-	{.compatible = "arm,cortex-a9-pmu"},
-	{.compatible = "arm,cortex-a8-pmu"},
-	{.compatible = "arm,arm1136-pmu"},
-	{.compatible = "arm,arm1176-pmu"},
-	{},
-};
-
+<<<<<<< HEAD
 static struct platform_device_id armpmu_plat_device_ids[] = {
 	{.name = "cpu-arm-pmu"},
 	{},
 };
 
 static int __devinit armpmu_device_probe(struct platform_device *pdev)
+=======
+static int armpmu_runtime_suspend(struct device *dev)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 {
-	if (!cpu_pmu)
-		return -ENODEV;
+	struct arm_pmu_platdata *plat = dev_get_platdata(dev);
 
-	cpu_pmu->plat_device = pdev;
+	if (plat && plat->runtime_suspend)
+		return plat->runtime_suspend(dev);
+
 	return 0;
 }
+#endif
 
+<<<<<<< HEAD
 static struct platform_driver armpmu_driver = {
 	.driver		= {
 		.name	= "cpu-arm-pmu",
@@ -721,32 +740,30 @@ static struct platform_driver armpmu_driver = {
 	},
 	.probe		= armpmu_device_probe,
 	.id_table	= armpmu_plat_device_ids,
+=======
+const struct dev_pm_ops armpmu_dev_pm_ops = {
+	SET_RUNTIME_PM_OPS(armpmu_runtime_suspend, armpmu_runtime_resume, NULL)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 };
 
-static int __init register_pmu_driver(void)
+static void armpmu_init(struct arm_pmu *armpmu)
 {
-	return platform_driver_register(&armpmu_driver);
-}
-device_initcall(register_pmu_driver);
+	atomic_set(&armpmu->active_events, 0);
+	mutex_init(&armpmu->reserve_mutex);
 
-static struct pmu_hw_events *armpmu_get_cpu_events(void)
-{
-	return &__get_cpu_var(cpu_hw_events);
-}
-
-static void __init cpu_pmu_init(struct arm_pmu *armpmu)
-{
-	int cpu;
-	for_each_possible_cpu(cpu) {
-		struct pmu_hw_events *events = &per_cpu(cpu_hw_events, cpu);
-		events->events = per_cpu(hw_events, cpu);
-		events->used_mask = per_cpu(used_mask, cpu);
-		raw_spin_lock_init(&events->pmu_lock);
-	}
-	armpmu->get_hw_events = armpmu_get_cpu_events;
-	armpmu->type = ARM_PMU_DEVICE_CPU;
+	armpmu->pmu = (struct pmu) {
+		.pmu_enable	= armpmu_enable,
+		.pmu_disable	= armpmu_disable,
+		.event_init	= armpmu_event_init,
+		.add		= armpmu_add,
+		.del		= armpmu_del,
+		.start		= armpmu_start,
+		.stop		= armpmu_stop,
+		.read		= armpmu_read,
+	};
 }
 
+<<<<<<< HEAD
 static int cpu_has_active_perf(void)
 {
 	struct pmu_hw_events *hw_events;
@@ -970,8 +987,16 @@ init_hw_perf_events(void)
 	}
 
 	return 0;
+=======
+int armpmu_register(struct arm_pmu *armpmu, int type)
+{
+	armpmu_init(armpmu);
+	pm_runtime_enable(&armpmu->plat_device->dev);
+	pr_info("enabled with %s PMU driver, %d counters available\n",
+			armpmu->name, armpmu->num_events);
+	return perf_pmu_register(&armpmu->pmu, armpmu->name, type);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
-early_initcall(init_hw_perf_events);
 
 /*
  * Callchain handling code.
@@ -1024,7 +1049,12 @@ perf_callchain_user(struct perf_callchain_entry *entry, struct pt_regs *regs)
 {
 	struct frame_tail __user *tail;
 
+	if (perf_guest_cbs && perf_guest_cbs->is_in_guest()) {
+		/* We don't support guest os callchain now */
+		return;
+	}
 
+	perf_callchain_store(entry, regs->ARM_pc);
 	tail = (struct frame_tail __user *)regs->ARM_fp - 1;
 
 	while ((entry->nr < PERF_MAX_STACK_DEPTH) &&
@@ -1051,9 +1081,41 @@ perf_callchain_kernel(struct perf_callchain_entry *entry, struct pt_regs *regs)
 {
 	struct stackframe fr;
 
+	if (perf_guest_cbs && perf_guest_cbs->is_in_guest()) {
+		/* We don't support guest os callchain now */
+		return;
+	}
+
 	fr.fp = regs->ARM_fp;
 	fr.sp = regs->ARM_sp;
 	fr.lr = regs->ARM_lr;
 	fr.pc = regs->ARM_pc;
 	walk_stackframe(&fr, callchain_trace, entry);
+}
+
+unsigned long perf_instruction_pointer(struct pt_regs *regs)
+{
+	if (perf_guest_cbs && perf_guest_cbs->is_in_guest())
+		return perf_guest_cbs->get_guest_ip();
+
+	return instruction_pointer(regs);
+}
+
+unsigned long perf_misc_flags(struct pt_regs *regs)
+{
+	int misc = 0;
+
+	if (perf_guest_cbs && perf_guest_cbs->is_in_guest()) {
+		if (perf_guest_cbs->is_user_mode())
+			misc |= PERF_RECORD_MISC_GUEST_USER;
+		else
+			misc |= PERF_RECORD_MISC_GUEST_KERNEL;
+	} else {
+		if (user_mode(regs))
+			misc |= PERF_RECORD_MISC_USER;
+		else
+			misc |= PERF_RECORD_MISC_KERNEL;
+	}
+
+	return misc;
 }

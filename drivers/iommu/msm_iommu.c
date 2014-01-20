@@ -26,9 +26,14 @@
 #include <asm/cacheflush.h>
 #include <asm/sizes.h>
 
+<<<<<<< HEAD
 #include <mach/iommu_hw-8xxx.h>
 #include <mach/iommu.h>
 #include <mach/msm_smsm.h>
+=======
+#include "msm_iommu_hw-8xxx.h"
+#include "msm_iommu.h"
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 #define MRC(reg, processor, op1, crn, crm, op2)				\
 __asm__ __volatile__ (							\
@@ -379,7 +384,13 @@ static int msm_iommu_domain_init(struct iommu_domain *domain, int flags)
 	memset(priv->pgtable, 0, SZ_16K);
 	domain->priv = priv;
 
+<<<<<<< HEAD
 	clean_pte(priv->pgtable, priv->pgtable + NUM_FL_PTE, priv->redirect);
+=======
+	domain->geometry.aperture_start = 0;
+	domain->geometry.aperture_end   = (1ULL << 32) - 1;
+	domain->geometry.force_aperture = true;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	return 0;
 
@@ -1130,7 +1141,7 @@ static int msm_iommu_unmap_range(struct iommu_domain *domain, unsigned int va,
 }
 
 static phys_addr_t msm_iommu_iova_to_phys(struct iommu_domain *domain,
-					  unsigned long va)
+					  dma_addr_t va)
 {
 	struct msm_priv *priv;
 	struct msm_iommu_drvdata *iommu_drvdata;

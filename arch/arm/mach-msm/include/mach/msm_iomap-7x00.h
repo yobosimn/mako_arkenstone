@@ -115,6 +115,7 @@
 #define MSM_AD5_PHYS          0xAC000000
 #define MSM_AD5_SIZE          (SZ_1M*13)
 
+<<<<<<< HEAD
 #define MSM_VFE_PHYS          0xA0F00000
 #define MSM_VFE_SIZE          SZ_1M
 
@@ -133,4 +134,6 @@
 #define MSM_GCC_SIZE          SZ_4K
 #endif
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #endif

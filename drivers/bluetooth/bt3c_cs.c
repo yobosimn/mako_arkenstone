@@ -187,9 +187,9 @@ static void bt3c_write_wakeup(bt3c_info_t *info)
 		return;
 
 	do {
-		register unsigned int iobase = info->p_dev->resource[0]->start;
+		unsigned int iobase = info->p_dev->resource[0]->start;
 		register struct sk_buff *skb;
-		register int len;
+		int len;
 
 		if (!pcmcia_dev_present(info->p_dev))
 			break;
@@ -248,7 +248,6 @@ static void bt3c_receive(bt3c_info_t *info)
 
 		if (info->rx_state == RECV_WAIT_PACKET_TYPE) {
 
-			info->rx_skb->dev = (void *) info->hdev;
 			bt_cb(info->rx_skb)->pkt_type = inb(iobase + DATA_L);
 			inb(iobase + DATA_H);
 			//printk("bt3c: PACKET_TYPE=%02x\n", bt_cb(info->rx_skb)->pkt_type);
@@ -319,7 +318,7 @@ static void bt3c_receive(bt3c_info_t *info)
 					break;
 
 				case RECV_WAIT_DATA:
-					hci_recv_frame(info->rx_skb);
+					hci_recv_frame(info->hdev, info->rx_skb);
 					info->rx_skb = NULL;
 					break;
 
@@ -417,12 +416,12 @@ static int bt3c_hci_close(struct hci_dev *hdev)
 }
 
 
-static int bt3c_hci_send_frame(struct sk_buff *skb)
+static int bt3c_hci_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
 {
-	bt3c_info_t *info;
-	struct hci_dev *hdev = (struct hci_dev *)(skb->dev);
+	bt3c_info_t *info = hci_get_drvdata(hdev);
 	unsigned long flags;
 
+<<<<<<< HEAD
 	if (!hdev) {
 		BT_ERR("Frame for unknown HCI device (hdev=NULL)");
 		return -ENODEV;
@@ -430,6 +429,8 @@ static int bt3c_hci_send_frame(struct sk_buff *skb)
 
 	info = (bt3c_info_t *) (hdev->driver_data);
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	switch (bt_cb(skb)->pkt_type) {
 	case HCI_COMMAND_PKT:
 		hdev->stat.cmd_tx++;
@@ -456,6 +457,7 @@ static int bt3c_hci_send_frame(struct sk_buff *skb)
 }
 
 
+<<<<<<< HEAD
 static void bt3c_hci_destruct(struct hci_dev *hdev)
 {
 }
@@ -467,6 +469,8 @@ static int bt3c_hci_ioctl(struct hci_dev *hdev, unsigned int cmd, unsigned long 
 }
 
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 /* ======================== Card services HCI interaction ======================== */
 
@@ -583,12 +587,19 @@ static int bt3c_open(bt3c_info_t *info)
 	hdev->driver_data = info;
 	SET_HCIDEV_DEV(hdev, &info->p_dev->dev);
 
+<<<<<<< HEAD
 	hdev->open     = bt3c_hci_open;
 	hdev->close    = bt3c_hci_close;
 	hdev->flush    = bt3c_hci_flush;
 	hdev->send     = bt3c_hci_send_frame;
 	hdev->destruct = bt3c_hci_destruct;
 	hdev->ioctl    = bt3c_hci_ioctl;
+=======
+	hdev->open  = bt3c_hci_open;
+	hdev->close = bt3c_hci_close;
+	hdev->flush = bt3c_hci_flush;
+	hdev->send  = bt3c_hci_send_frame;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	hdev->owner = THIS_MODULE;
 
@@ -649,7 +660,7 @@ static int bt3c_probe(struct pcmcia_device *link)
 	bt3c_info_t *info;
 
 	/* Create new info device */
-	info = kzalloc(sizeof(*info), GFP_KERNEL);
+	info = devm_kzalloc(&link->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
 		return -ENOMEM;
 
@@ -665,17 +676,14 @@ static int bt3c_probe(struct pcmcia_device *link)
 
 static void bt3c_detach(struct pcmcia_device *link)
 {
-	bt3c_info_t *info = link->priv;
-
 	bt3c_release(link);
-	kfree(info);
 }
 
 static int bt3c_check_config(struct pcmcia_device *p_dev, void *priv_data)
 {
 	int *try = priv_data;
 
-	if (try == 0)
+	if (!try)
 		p_dev->io_lines = 16;
 
 	if ((p_dev->resource[0]->end != 8) || (p_dev->resource[0]->start == 0))
@@ -774,17 +782,4 @@ static struct pcmcia_driver bt3c_driver = {
 	.remove		= bt3c_detach,
 	.id_table	= bt3c_ids,
 };
-
-static int __init init_bt3c_cs(void)
-{
-	return pcmcia_register_driver(&bt3c_driver);
-}
-
-
-static void __exit exit_bt3c_cs(void)
-{
-	pcmcia_unregister_driver(&bt3c_driver);
-}
-
-module_init(init_bt3c_cs);
-module_exit(exit_bt3c_cs);
+module_pcmcia_driver(bt3c_driver);

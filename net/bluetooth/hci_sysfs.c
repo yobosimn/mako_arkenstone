@@ -1,20 +1,20 @@
 /* Bluetooth HCI driver model support. */
 
+<<<<<<< HEAD
 #include <linux/kernel.h>
 #include <linux/slab.h>
 #include <linux/init.h>
 #include <linux/debugfs.h>
 #include <linux/seq_file.h>
 #include <linux/interrupt.h>
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #include <linux/module.h>
 
 #include <net/bluetooth/bluetooth.h>
 #include <net/bluetooth/hci_core.h>
 
 static struct class *bt_class;
-
-struct dentry *bt_debugfs;
-EXPORT_SYMBOL_GPL(bt_debugfs);
 
 static inline char *link_typetostr(int type)
 {
@@ -30,12 +30,14 @@ static inline char *link_typetostr(int type)
 	}
 }
 
-static ssize_t show_link_type(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t show_link_type(struct device *dev,
+			      struct device_attribute *attr, char *buf)
 {
 	struct hci_conn *conn = dev_get_drvdata(dev);
 	return sprintf(buf, "%s\n", link_typetostr(conn->type));
 }
 
+<<<<<<< HEAD
 static ssize_t show_link_address(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct hci_conn *conn = dev_get_drvdata(dev);
@@ -51,6 +53,13 @@ static ssize_t show_link_features(struct device *dev, struct device_attribute *a
 				conn->features[2], conn->features[3],
 				conn->features[4], conn->features[5],
 				conn->features[6], conn->features[7]);
+=======
+static ssize_t show_link_address(struct device *dev,
+				 struct device_attribute *attr, char *buf)
+{
+	struct hci_conn *conn = to_hci_conn(dev);
+	return sprintf(buf, "%pMR\n", &conn->dst);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 #define LINK_ATTR(_name, _mode, _show, _store) \
@@ -58,12 +67,10 @@ struct device_attribute link_attr_##_name = __ATTR(_name, _mode, _show, _store)
 
 static LINK_ATTR(type, S_IRUGO, show_link_type, NULL);
 static LINK_ATTR(address, S_IRUGO, show_link_address, NULL);
-static LINK_ATTR(features, S_IRUGO, show_link_features, NULL);
 
 static struct attribute *bt_link_attrs[] = {
 	&link_attr_type.attr,
 	&link_attr_address.attr,
-	&link_attr_features.attr,
 	NULL
 };
 
@@ -134,11 +141,11 @@ static void del_conn(struct work_struct *work)
 	}
 
 	device_del(&conn->dev);
-	put_device(&conn->dev);
 
 	hci_dev_put(hdev);
 }
 
+<<<<<<< HEAD
 void hci_conn_init_sysfs(struct hci_conn *conn)
 {
 	struct hci_dev *hdev = conn->hdev;
@@ -192,6 +199,8 @@ static inline char *host_bustostr(int bus)
 	}
 }
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 static inline char *host_typetostr(int type)
 {
 	switch (type) {
@@ -204,6 +213,7 @@ static inline char *host_typetostr(int type)
 	}
 }
 
+<<<<<<< HEAD
 static ssize_t show_bus(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct hci_dev *hdev = dev_get_drvdata(dev);
@@ -211,12 +221,17 @@ static ssize_t show_bus(struct device *dev, struct device_attribute *attr, char 
 }
 
 static ssize_t show_type(struct device *dev, struct device_attribute *attr, char *buf)
+=======
+static ssize_t show_type(struct device *dev,
+			 struct device_attribute *attr, char *buf)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 {
 	struct hci_dev *hdev = dev_get_drvdata(dev);
 	return sprintf(buf, "%s\n", host_typetostr(hdev->dev_type));
 }
 
-static ssize_t show_name(struct device *dev, struct device_attribute *attr, char *buf)
+static ssize_t show_name(struct device *dev,
+			 struct device_attribute *attr, char *buf)
 {
 	struct hci_dev *hdev = dev_get_drvdata(dev);
 	char name[HCI_MAX_NAME_LENGTH + 1];
@@ -229,6 +244,7 @@ static ssize_t show_name(struct device *dev, struct device_attribute *attr, char
 	return sprintf(buf, "%s\n", name);
 }
 
+<<<<<<< HEAD
 static ssize_t show_class(struct device *dev, struct device_attribute *attr, char *buf)
 {
 	struct hci_dev *hdev = dev_get_drvdata(dev);
@@ -341,38 +357,23 @@ static ssize_t store_sniff_min_interval(struct device *dev, struct device_attrib
 	hdev->sniff_min_interval = val;
 
 	return count;
+=======
+static ssize_t show_address(struct device *dev,
+			    struct device_attribute *attr, char *buf)
+{
+	struct hci_dev *hdev = to_hci_dev(dev);
+	return sprintf(buf, "%pMR\n", &hdev->bdaddr);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
-static DEVICE_ATTR(bus, S_IRUGO, show_bus, NULL);
 static DEVICE_ATTR(type, S_IRUGO, show_type, NULL);
 static DEVICE_ATTR(name, S_IRUGO, show_name, NULL);
-static DEVICE_ATTR(class, S_IRUGO, show_class, NULL);
 static DEVICE_ATTR(address, S_IRUGO, show_address, NULL);
-static DEVICE_ATTR(features, S_IRUGO, show_features, NULL);
-static DEVICE_ATTR(manufacturer, S_IRUGO, show_manufacturer, NULL);
-static DEVICE_ATTR(hci_version, S_IRUGO, show_hci_version, NULL);
-static DEVICE_ATTR(hci_revision, S_IRUGO, show_hci_revision, NULL);
-
-static DEVICE_ATTR(idle_timeout, S_IRUGO | S_IWUSR,
-				show_idle_timeout, store_idle_timeout);
-static DEVICE_ATTR(sniff_max_interval, S_IRUGO | S_IWUSR,
-				show_sniff_max_interval, store_sniff_max_interval);
-static DEVICE_ATTR(sniff_min_interval, S_IRUGO | S_IWUSR,
-				show_sniff_min_interval, store_sniff_min_interval);
 
 static struct attribute *bt_host_attrs[] = {
-	&dev_attr_bus.attr,
 	&dev_attr_type.attr,
 	&dev_attr_name.attr,
-	&dev_attr_class.attr,
 	&dev_attr_address.attr,
-	&dev_attr_features.attr,
-	&dev_attr_manufacturer.attr,
-	&dev_attr_hci_version.attr,
-	&dev_attr_hci_revision.attr,
-	&dev_attr_idle_timeout.attr,
-	&dev_attr_sniff_max_interval.attr,
-	&dev_attr_sniff_min_interval.attr,
 	NULL
 };
 
@@ -397,6 +398,7 @@ static struct device_type bt_host = {
 	.release = bt_host_release,
 };
 
+<<<<<<< HEAD
 static int inquiry_cache_show(struct seq_file *f, void *p)
 {
 	struct hci_dev *hdev = f->private;
@@ -558,22 +560,27 @@ void hci_unregister_sysfs(struct hci_dev *hdev)
 	debugfs_remove_recursive(hdev->debugfs);
 
 	device_del(&hdev->dev);
+=======
+void hci_init_sysfs(struct hci_dev *hdev)
+{
+	struct device *dev = &hdev->dev;
+
+	dev->type = &bt_host;
+	dev->class = bt_class;
+
+	__module_get(THIS_MODULE);
+	device_initialize(dev);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 int __init bt_sysfs_init(void)
 {
-	bt_debugfs = debugfs_create_dir("bluetooth", NULL);
-
 	bt_class = class_create(THIS_MODULE, "bluetooth");
-	if (IS_ERR(bt_class))
-		return PTR_ERR(bt_class);
 
-	return 0;
+	return PTR_ERR_OR_ZERO(bt_class);
 }
 
 void bt_sysfs_cleanup(void)
 {
 	class_destroy(bt_class);
-
-	debugfs_remove_recursive(bt_debugfs);
 }

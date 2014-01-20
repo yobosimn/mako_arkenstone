@@ -71,6 +71,7 @@
 #elif defined(CONFIG_ARCH_QSD8X50)
 #include "irqs-8x50.h"
 #include "sirc.h"
+<<<<<<< HEAD
 #elif defined(CONFIG_ARCH_MSM8X60)
 #include "irqs-8x60.h"
 #elif defined(CONFIG_ARCH_MSM7X01A) || defined(CONFIG_ARCH_MSM7X25) \
@@ -84,6 +85,10 @@
 #elif defined(CONFIG_ARCH_FSM9XXX)
 #include "irqs-fsm9xxx.h"
 #include "sirc.h"
+=======
+#elif defined(CONFIG_ARCH_MSM_ARM11)
+#include "irqs-7x00.h"
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #else
 #error "Unknown architecture specification"
 #endif

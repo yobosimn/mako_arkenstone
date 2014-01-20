@@ -47,7 +47,12 @@ static inline int pm8xxx_get_irq_stat(struct pm_irq_chip *chip, int irq)
 {
 	return -ENXIO;
 }
+<<<<<<< HEAD
 static inline struct pm_irq_chip *pm8xxx_irq_init(const struct device *dev,
+=======
+static inline struct pm_irq_chip *pm8xxx_irq_init(
+				const struct device *dev,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 				const struct pm8xxx_irq_platform_data *pdata)
 {
 	return ERR_PTR(-ENXIO);

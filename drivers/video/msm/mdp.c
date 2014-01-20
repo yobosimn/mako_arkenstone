@@ -59,11 +59,17 @@ struct res_mmu_clk {
 	struct clk *mmu_clk;
 };
 
+<<<<<<< HEAD
 static struct res_mmu_clk mdp_sec_mmu_clks[] = {
 	{"mdp_iommu_clk"}, {"rot_iommu_clk"},
 	{"vcodec_iommu0_clk"}, {"vcodec_iommu1_clk"},
 	{"smmu_iface_clk"}
 };
+=======
+#include <linux/platform_data/video-msm_fb.h>
+#include <linux/platform_device.h>
+#include <linux/export.h>
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 int mdp_rev;
 int mdp_iommu_split_domain;
@@ -827,6 +833,7 @@ static int mdp_histogram_destroy(void)
 
 static int mdp_histogram_init(void)
 {
+<<<<<<< HEAD
 	struct mdp_hist_mgmt *temp;
 	int i, ret;
 
@@ -874,6 +881,19 @@ static int mdp_histogram_init(void)
 		if (ret)
 			goto exit_list;
 	}
+=======
+	int ret = 0;
+	struct fd f = fdget(img->memory_id);
+	if (f.file == NULL)
+		return -1;
+
+	if (MAJOR(file_inode(f.file)->i_rdev) == FB_MAJOR) {
+		*start = info->fix.smem_start;
+		*len = info->fix.smem_len;
+	} else
+		ret = -1;
+	fdput(f);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	return 0;
 

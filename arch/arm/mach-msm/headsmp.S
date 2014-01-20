@@ -10,8 +10,11 @@
 #include <linux/linkage.h>
 #include <linux/init.h>
 
+<<<<<<< HEAD
 __CPUINIT
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 /*
  * MSM specific entry point for secondary CPUs.  This provides
  * a "holding pen" into which all secondary cores are held until we're

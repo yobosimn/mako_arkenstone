@@ -22,8 +22,13 @@
 #include <linux/err.h>
 #include <linux/slab.h>
 
+<<<<<<< HEAD
 #include <mach/iommu_hw-8xxx.h>
 #include <mach/iommu.h>
+=======
+#include "msm_iommu_hw-8xxx.h"
+#include "msm_iommu.h"
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 struct iommu_ctx_iter_data {
 	/* input */
@@ -164,10 +169,15 @@ static int msm_iommu_probe(struct platform_device *pdev)
 	iommu_clk = clk_get(&pdev->dev, "core_clk");
 
 	if (!IS_ERR(iommu_clk))	{
+<<<<<<< HEAD
 		if (clk_get_rate(iommu_clk) == 0) {
 			ret = clk_round_rate(iommu_clk, 1);
 			clk_set_rate(iommu_clk, ret);
 		}
+=======
+		if (clk_get_rate(iommu_clk) == 0)
+			clk_set_rate(iommu_clk, 1);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 		ret = clk_prepare_enable(iommu_clk);
 		if (ret) {
@@ -263,12 +273,14 @@ static int msm_iommu_remove(struct platform_device *pdev)
 
 	drv = platform_get_drvdata(pdev);
 	if (drv) {
-		if (drv->clk)
+		if (drv->clk) {
+			clk_unprepare(drv->clk);
 			clk_put(drv->clk);
+		}
+		clk_unprepare(drv->pclk);
 		clk_put(drv->pclk);
 		memset(drv, 0, sizeof(*drv));
 		kfree(drv);
-		platform_set_drvdata(pdev, NULL);
 	}
 	return 0;
 }
@@ -277,25 +289,29 @@ static int msm_iommu_ctx_probe(struct platform_device *pdev)
 {
 	struct msm_iommu_ctx_dev *c = pdev->dev.platform_data;
 	struct msm_iommu_drvdata *drvdata;
+<<<<<<< HEAD
 	struct msm_iommu_ctx_drvdata *ctx_drvdata = NULL;
 	int i, ret, irq;
 	if (!c || !pdev->dev.parent) {
 		ret = -EINVAL;
 		goto fail;
 	}
+=======
+	struct msm_iommu_ctx_drvdata *ctx_drvdata;
+	int i, ret;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
+
+	if (!c || !pdev->dev.parent)
+		return -EINVAL;
 
 	drvdata = dev_get_drvdata(pdev->dev.parent);
-
-	if (!drvdata) {
-		ret = -ENODEV;
-		goto fail;
-	}
+	if (!drvdata)
+		return -ENODEV;
 
 	ctx_drvdata = kzalloc(sizeof(*ctx_drvdata), GFP_KERNEL);
-	if (!ctx_drvdata) {
-		ret = -ENOMEM;
-		goto fail;
-	}
+	if (!ctx_drvdata)
+		return -ENOMEM;
+
 	ctx_drvdata->num = c->num;
 	ctx_drvdata->pdev = pdev;
 	ctx_drvdata->name = c->name;
@@ -378,7 +394,6 @@ static int msm_iommu_ctx_remove(struct platform_device *pdev)
 	if (drv) {
 		memset(drv, 0, sizeof(struct msm_iommu_ctx_drvdata));
 		kfree(drv);
-		platform_set_drvdata(pdev, NULL);
 	}
 	return 0;
 }
@@ -410,6 +425,7 @@ static int __init msm_iommu_driver_init(void)
 
 	ret = platform_driver_register(&msm_iommu_ctx_driver);
 	if (ret != 0) {
+		platform_driver_unregister(&msm_iommu_driver);
 		pr_err("Failed to register IOMMU context driver\n");
 		goto error;
 	}

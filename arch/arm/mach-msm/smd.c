@@ -37,12 +37,15 @@
 #include <linux/sort.h>
 #include <linux/suspend.h>
 #include <mach/msm_smd.h>
+<<<<<<< HEAD
 #include <mach/msm_iomap.h>
 #include <mach/system.h>
 #include <mach/subsystem_notif.h>
 #include <mach/socinfo.h>
 #include <mach/proc_comm.h>
 #include <asm/cacheflush.h>
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 #include "smd_private.h"
 #include "modem_notifier.h"
@@ -53,6 +56,7 @@
 #define CONFIG_QDSP6 1
 #endif
 
+<<<<<<< HEAD
 #if defined(CONFIG_ARCH_MSM8X60) || defined(CONFIG_ARCH_MSM8960) \
 	|| defined(CONFIG_ARCH_APQ8064)
 #define CONFIG_DSPS 1
@@ -64,6 +68,8 @@
 #define CONFIG_DSPS_SMSM 1
 #endif
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #define MODULE_NAME "msm_smd"
 #define SMEM_VERSION 0x000B
 #define SMD_VERSION 0x00020000
@@ -167,10 +173,16 @@ static struct interrupt_config private_intr_config[NUM_SMD_SUBSYSTEMS] = {
 	},
 };
 
+<<<<<<< HEAD
 struct smem_area {
 	void *phys_addr;
 	unsigned size;
 	void __iomem *virt_addr;
+=======
+struct shared_info {
+	int ready;
+	void __iomem *state;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 };
 static uint32_t num_smem_areas;
 static struct smem_area *smem_areas;
@@ -183,9 +195,15 @@ struct interrupt_stat interrupt_stats[NUM_SMD_SUBSYSTEMS];
 					  entry * SMSM_NUM_HOSTS + host)
 #define SMSM_INTR_MUX_ADDR(entry)        (smsm_info.intr_mux + entry)
 
+<<<<<<< HEAD
 /* Internal definitions which are not exported in some targets */
 enum {
 	SMSM_APPS_DEM_I = 3,
+=======
+static struct shared_info smd_info = {
+	/* FIXME: not a real __iomem pointer */
+	.state = &dummy_state,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 };
 
 static int msm_smd_debug_mask;
@@ -598,11 +616,14 @@ static void handle_modem_crash(void)
 	pr_err("MODEM/AMSS has CRASHED\n");
 	smd_diag();
 
+<<<<<<< HEAD
 	/* hard reboot if possible FIXME
 	if (msm_reset_hook)
 		msm_reset_hook();
 	*/
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	/* in this case the modem or watchdog should reboot us */
 	for (;;)
 		;
@@ -2366,10 +2387,14 @@ void *smem_alloc(unsigned id, unsigned size)
 }
 EXPORT_SYMBOL(smem_alloc);
 
+<<<<<<< HEAD
 /* smem_alloc2 returns the pointer to smem item.  If it is not allocated,
  * it allocates it and then returns the pointer to it.
  */
 void *smem_alloc2(unsigned id, unsigned size_in)
+=======
+void __iomem *smem_item(unsigned id, unsigned *size)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 {
 	struct smem_shared *shared = (void *) MSM_SHARED_RAM_BASE;
 	struct smem_heap_entry *toc = shared->heap_toc;
@@ -2383,6 +2408,7 @@ void *smem_alloc2(unsigned id, unsigned size_in)
 
 	if (id >= SMEM_NUM_ITEMS)
 		return NULL;
+<<<<<<< HEAD
 
 	size_in = ALIGN(size_in, 8);
 	remote_spin_lock_irqsave(&remote_spinlock, flags);
@@ -2425,12 +2451,15 @@ void *smem_get_entry(unsigned id, unsigned *size)
 
 	if (id >= SMEM_NUM_ITEMS)
 		return ret;
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	if (use_spinlocks)
 		remote_spin_lock_irqsave(&remote_spinlock, flags);
 	/* toc is in device memory and cannot be speculatively accessed */
 	if (toc[id].allocated) {
 		*size = toc[id].size;
+<<<<<<< HEAD
 		barrier();
 		if (!(toc[id].reserved & BASE_ADDR_MASK))
 			ret = (void *) (MSM_SHARED_RAM_BASE + toc[id].offset);
@@ -2438,13 +2467,20 @@ void *smem_get_entry(unsigned id, unsigned *size)
 			ret = smem_range_check(
 				(void *)(toc[id].reserved & BASE_ADDR_MASK),
 				toc[id].offset);
+=======
+		return (MSM_SHARED_RAM_BASE + toc[id].offset);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	} else {
 		*size = 0;
 	}
 	if (use_spinlocks)
 		remote_spin_unlock_irqrestore(&remote_spinlock, flags);
 
+<<<<<<< HEAD
 	return ret;
+=======
+	return NULL;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 EXPORT_SYMBOL(smem_get_entry);
 
@@ -2773,6 +2809,7 @@ static irqreturn_t smsm_modem_irq_handler(int irq, void *data)
 
 static irqreturn_t smsm_dsp_irq_handler(int irq, void *data)
 {
+<<<<<<< HEAD
 	SMx_POWER_INFO("SMSM Int LPASS->Apps\n");
 	++interrupt_stats[SMD_Q6].smsm_in_count;
 	return smsm_irq_handler(irq, data);
@@ -2810,6 +2847,9 @@ int smsm_change_intr_mask(uint32_t smsm_entry,
 			  uint32_t clear_mask, uint32_t set_mask)
 {
 	uint32_t  old_mask, new_mask;
+=======
+	void __iomem *addr = smd_info.state + item * 4;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	unsigned long flags;
 
 	if (smsm_entry >= SMSM_NUM_ENTRIES) {
@@ -3095,6 +3135,7 @@ int smsm_state_cb_deregister(uint32_t smsm_entry, uint32_t mask,
 	uint32_t new_mask = 0;
 	int ret = 0;
 
+<<<<<<< HEAD
 	if (smsm_entry >= SMSM_NUM_ENTRIES)
 		return -EINVAL;
 
@@ -3120,6 +3161,16 @@ int smsm_state_cb_deregister(uint32_t smsm_entry, uint32_t mask,
 				ret = 2;
 				continue;
 			}
+=======
+	/* wait for essential items to be initialized */
+	for (;;) {
+		unsigned size;
+		void __iomem *state;
+		state = smem_item(SMEM_SMSM_SHARED_STATE, &size);
+		if (size == SMSM_V1_SIZE || size == SMSM_V2_SIZE) {
+			smd_info.state = state;
+			break;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 		}
 		new_mask |= cb_info->mask;
 	}
@@ -3496,7 +3547,7 @@ smem_areas_alloc_fail:
 	return err_ret;
 }
 
-static int __devinit msm_smd_probe(struct platform_device *pdev)
+static int msm_smd_probe(struct platform_device *pdev)
 {
 	int ret;
 

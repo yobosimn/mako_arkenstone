@@ -14,8 +14,13 @@
 #include <asm/io.h>
 
 #include <mach/vreg.h>
+<<<<<<< HEAD
 #include <mach/proc_comm.h>
 #include <mach/mmc.h>
+=======
+
+#include <linux/platform_data/mmc-msm_sdcc.h>
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 #include "devices.h"
 

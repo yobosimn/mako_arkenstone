@@ -410,8 +410,13 @@ ENTRY(xscale_dma_unmap_area)
 	mov	pc, lr
 ENDPROC(xscale_dma_unmap_area)
 
+<<<<<<< HEAD
 	.globl  xscale_flush_kern_cache_louis
 	.equ  xscale_flush_kern_cache_louis, xscale_flush_kern_cache_all
+=======
+	.globl	xscale_flush_kern_cache_louis
+	.equ	xscale_flush_kern_cache_louis, xscale_flush_kern_cache_all
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	@ define struct cpu_cache_fns (see <asm/cacheflush.h> and proc-macros.S)
 	define_cache_functions xscale
@@ -442,6 +447,7 @@ ENDPROC(xscale_dma_unmap_area)
 	a0_alias flush_icache_all
 	a0_alias flush_user_cache_all
 	a0_alias flush_kern_cache_all
+	a0_alias flush_kern_cache_louis
 	a0_alias flush_user_cache_range
 	a0_alias coherent_kern_range
 	a0_alias coherent_user_range
@@ -527,7 +533,7 @@ ENTRY(cpu_xscale_set_pte_ext)
 
 .globl	cpu_xscale_suspend_size
 .equ	cpu_xscale_suspend_size, 4 * 6
-#ifdef CONFIG_PM_SLEEP
+#ifdef CONFIG_ARM_CPU_SUSPEND
 ENTRY(cpu_xscale_do_suspend)
 	stmfd	sp!, {r4 - r9, lr}
 	mrc	p14, 0, r4, c6, c0, 0	@ clock configuration, for turbo mode
@@ -556,8 +562,6 @@ ENTRY(cpu_xscale_do_resume)
 	b	cpu_resume_mmu
 ENDPROC(cpu_xscale_do_resume)
 #endif
-
-	__CPUINIT
 
 	.type	__xscale_setup, #function
 __xscale_setup:

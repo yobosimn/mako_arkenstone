@@ -32,6 +32,7 @@
 #include <asm/mach/time.h>
 #include <asm/mach-types.h>
 #include <mach/time.h>
+#include "gpio-iop32x.h"
 
 static void __init em7210_timer_init(void)
 {
@@ -39,10 +40,6 @@ static void __init em7210_timer_init(void)
 	/* 33.333 MHz crystal.                                */
 	iop_init_time(200000000);
 }
-
-static struct sys_timer em7210_timer = {
-	.init		= em7210_timer_init,
-};
 
 /*
  * EM7210 RTC
@@ -103,11 +100,10 @@ em7210_pci_map_irq(const struct pci_dev *dev, u8 slot, u8 pin)
 }
 
 static struct hw_pci em7210_pci __initdata = {
-	.swizzle	= pci_std_swizzle,
 	.nr_controllers = 1,
+	.ops		= &iop3xx_ops,
 	.setup		= iop3xx_pci_setup,
 	.preinit	= iop3xx_pci_preinit,
-	.scan		= iop3xx_pci_scan_bus,
 	.map_irq	= em7210_pci_map_irq,
 };
 
@@ -188,6 +184,7 @@ void em7210_power_off(void)
 
 static void __init em7210_init_machine(void)
 {
+	register_iop32x_gpio();
 	platform_device_register(&em7210_serial_device);
 	platform_device_register(&iop3xx_i2c0_device);
 	platform_device_register(&iop3xx_i2c1_device);
@@ -206,7 +203,7 @@ MACHINE_START(EM7210, "Lanner EM7210")
 	.atag_offset	= 0x100,
 	.map_io		= em7210_map_io,
 	.init_irq	= iop32x_init_irq,
-	.timer		= &em7210_timer,
+	.init_time	= em7210_timer_init,
 	.init_machine	= em7210_init_machine,
 	.restart	= iop3xx_restart,
 MACHINE_END

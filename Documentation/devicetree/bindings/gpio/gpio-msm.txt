@@ -9,6 +9,11 @@ Required properties:
 - gpio-controller : Marks the device node as a GPIO controller.
 - #interrupt-cells : Should be 2.
 - interrupt-controller: Mark the device node as an interrupt controller
+<<<<<<< HEAD
+=======
+- interrupts : Specify the TLMM summary interrupt number
+- ngpio : Specify the number of MSM GPIOs
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 Example:
 
@@ -19,6 +24,7 @@ Example:
 		interrupt-controller;
 		#interrupt-cells = <2>;
 		reg = <0xfd510000 0x4000>;
+<<<<<<< HEAD
 	};
 
 To specify gpios for a device:
@@ -37,3 +43,8 @@ of_get_named_gpio with "cs-gpios" as the name parameter.
 Please refer to the file: include/linux/of_gpio.h for the
 complete list of APIs the driver can use to extract gpio
 information from the device tree.
+=======
+		interrupts = <0 208 0>;
+		ngpio = <150>;
+	};
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be

@@ -380,6 +380,10 @@ static ssize_t skcipher_sendpage(struct socket *sock, struct page *page,
 
 	if (flags & MSG_SENDPAGE_NOTLAST)
 		flags |= MSG_MORE;
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	lock_sock(sk);
 	if (!ctx->more && ctx->used)
 		goto unlock;

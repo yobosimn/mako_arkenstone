@@ -21,7 +21,12 @@
 #include <linux/interrupt.h>
 #include <linux/gpio.h>
 #include <linux/sched.h>
+<<<<<<< HEAD
 #include <mach/msm_fb.h>
+=======
+#include <linux/slab.h>
+#include <linux/platform_data/video-msm_fb.h>
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 
 #define LCD_CONTROL_BLOCK_BASE 0x110000

@@ -116,6 +116,10 @@ static ssize_t hash_sendpage(struct socket *sock, struct page *page,
 
 	if (flags & MSG_SENDPAGE_NOTLAST)
 		flags |= MSG_MORE;
+<<<<<<< HEAD
+=======
+
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	lock_sock(sk);
 	sg_init_table(ctx->sgl.sg, 1);
 	sg_set_page(ctx->sgl.sg, page, size, offset);

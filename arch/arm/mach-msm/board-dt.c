@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 /* Copyright (c) 2011-2012, The Linux Foundation. All rights reserved.
+=======
+/* Copyright (c) 2010-2012,2013 The Linux Foundation. All rights reserved.
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -10,6 +14,7 @@
  * GNU General Public License for more details.
  */
 
+<<<<<<< HEAD
 #include <linux/kernel.h>
 #include <linux/errno.h>
 #include <linux/of.h>
@@ -87,4 +92,25 @@ DT_MACHINE_START(MSM_DT, "Qualcomm MSM (Flattened Device Tree)")
 	.dt_compat = msm_dt_match,
 	.reserve = msm_dt_reserve,
 	.init_very_early = msm_dt_init_very_early,
+=======
+#include <linux/init.h>
+#include <linux/of.h>
+#include <linux/of_platform.h>
+
+#include <asm/mach/arch.h>
+#include <asm/mach/map.h>
+
+#include "common.h"
+
+static const char * const msm_dt_match[] __initconst = {
+	"qcom,msm8660-fluid",
+	"qcom,msm8660-surf",
+	"qcom,msm8960-cdp",
+	NULL
+};
+
+DT_MACHINE_START(MSM_DT, "Qualcomm MSM (Flattened Device Tree)")
+	.smp = smp_ops(msm_smp_ops),
+	.dt_compat = msm_dt_match,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 MACHINE_END

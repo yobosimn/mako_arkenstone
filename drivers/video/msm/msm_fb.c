@@ -24,6 +24,7 @@
 #include <linux/mm.h>
 #include <linux/fb.h>
 #include <linux/msm_mdp.h>
+<<<<<<< HEAD
 #include <linux/init.h>
 #include <linux/ioport.h>
 #include <linux/device.h>
@@ -32,6 +33,11 @@
 #include <linux/uaccess.h>
 #include <mach/iommu_domains.h>
 
+=======
+#include <linux/io.h>
+#include <linux/uaccess.h>
+#include <linux/platform_data/video-msm_fb.h>
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #include <linux/workqueue.h>
 #include <linux/string.h>
 #include <linux/version.h>

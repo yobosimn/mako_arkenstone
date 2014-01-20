@@ -2,7 +2,7 @@
 	This file contains wireless extension handlers.
 
 	This is part of rtl8180 OpenSource driver.
-	Copyright (C) Andrea Merello 2004-2005  <andreamrl@tiscali.it>
+	Copyright (C) Andrea Merello 2004-2005  <andrea.merello@gmail.com>
 	Released under the terms of GPL (General Public Licence)
 
 	Parts of this driver are based on the GPL part
@@ -13,7 +13,7 @@
 
 	Parts of this driver are based on the Intel Pro Wireless 2100 GPL driver.
 
-	We want to tanks the Authors of those projects and the Ndiswrapper
+	We want to thanks the Authors of those projects and the Ndiswrapper
 	project Authors.
 */
 
@@ -50,16 +50,15 @@ static int r8180_wx_get_freq(struct net_device *dev,
 }
 
 
-int r8180_wx_set_key(struct net_device *dev, struct iw_request_info *info,
-		     union iwreq_data *wrqu, char *key)
+static int r8180_wx_set_key(struct net_device *dev,
+			    struct iw_request_info *info,
+			    union iwreq_data *wrqu, char *key)
 {
 	struct r8180_priv *priv = ieee80211_priv(dev);
 	struct iw_point *erq = &(wrqu->encoding);
 
 	if (priv->ieee80211->bHwRadioOff)
 		return 0;
-
-	if (erq->flags & IW_ENCODE_DISABLED)
 
 	if (erq->length > 0) {
 		u32* tkey = (u32*) key;
@@ -615,10 +614,10 @@ static int r8180_wx_get_retry(struct net_device *dev,
 		return -EINVAL;
 
 	if (wrqu->retry.flags & IW_RETRY_MAX) {
-		wrqu->retry.flags = IW_RETRY_LIMIT & IW_RETRY_MAX;
+		wrqu->retry.flags = IW_RETRY_LIMIT | IW_RETRY_MAX;
 		wrqu->retry.value = priv->retry_rts;
 	} else {
-		wrqu->retry.flags = IW_RETRY_LIMIT & IW_RETRY_MIN;
+		wrqu->retry.flags = IW_RETRY_LIMIT | IW_RETRY_MIN;
 		wrqu->retry.value = priv->retry_data;
 	}
 
@@ -1148,12 +1147,12 @@ static int r8180_wx_set_gen_ie(struct net_device *dev,
 	if (priv->ieee80211->bHwRadioOff)
 		return 0;
 
-		down(&priv->wx_sem);
+	down(&priv->wx_sem);
 #if 1
-		ret = ieee80211_wx_set_gen_ie(priv->ieee80211, extra, wrqu->data.length);
+	ret = ieee80211_wx_set_gen_ie(priv->ieee80211, extra, wrqu->data.length);
 #endif
-		up(&priv->wx_sem);
-		return ret;
+	up(&priv->wx_sem);
+	return ret;
 
 
 }
@@ -1181,7 +1180,7 @@ static iw_handler r8180_wx_handlers[] =	{
 		r8180_wx_set_wap,			/* SIOCSIWAP */
 		r8180_wx_get_wap,			/* SIOCGIWAP */
 		r8180_wx_set_mlme,			/* SIOCSIWMLME*/
-		dummy,					/* SIOCGIWAPLIST -- depricated */
+		dummy,					/* SIOCGIWAPLIST -- deprecated */
 		r8180_wx_set_scan,			/* SIOCSIWSCAN */
 		r8180_wx_get_scan,			/* SIOCGIWSCAN */
 		r8180_wx_set_essid,			/* SIOCSIWESSID */
@@ -1369,7 +1368,7 @@ static inline int is_same_network(struct ieee80211_network *src,
 			(dst->capability & WLAN_CAPABILITY_BSS)));
 }
 
-/* WB modefied to show signal to GUI on 18-01-2008 */
+/* WB modified to show signal to GUI on 18-01-2008 */
 static struct iw_statistics *r8180_get_wireless_stats(struct net_device *dev)
 {
 	struct r8180_priv *priv = ieee80211_priv(dev);

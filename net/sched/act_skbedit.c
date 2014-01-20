@@ -67,8 +67,9 @@ static const struct nla_policy skbedit_policy[TCA_SKBEDIT_MAX + 1] = {
 	[TCA_SKBEDIT_MARK]		= { .len = sizeof(u32) },
 };
 
-static int tcf_skbedit_init(struct nlattr *nla, struct nlattr *est,
-			 struct tc_action *a, int ovr, int bind)
+static int tcf_skbedit_init(struct net *net, struct nlattr *nla,
+			    struct nlattr *est, struct tc_action *a,
+			    int ovr, int bind)
 {
 	struct nlattr *tb[TCA_SKBEDIT_MAX + 1];
 	struct tc_skbedit *parm;
@@ -119,10 +120,11 @@ static int tcf_skbedit_init(struct nlattr *nla, struct nlattr *est,
 		ret = ACT_P_CREATED;
 	} else {
 		d = to_skbedit(pc);
-		if (!ovr) {
-			tcf_hash_release(pc, bind, &skbedit_hash_info);
+		if (bind)
+			return 0;
+		tcf_hash_release(pc, bind, &skbedit_hash_info);
+		if (!ovr)
 			return -EEXIST;
-		}
 	}
 
 	spin_lock_bh(&d->tcf_lock);
@@ -166,20 +168,25 @@ static int tcf_skbedit_dump(struct sk_buff *skb, struct tc_action *a,
 	};
 	struct tcf_t t;
 
-	NLA_PUT(skb, TCA_SKBEDIT_PARMS, sizeof(opt), &opt);
-	if (d->flags & SKBEDIT_F_PRIORITY)
-		NLA_PUT(skb, TCA_SKBEDIT_PRIORITY, sizeof(d->priority),
-			&d->priority);
-	if (d->flags & SKBEDIT_F_QUEUE_MAPPING)
-		NLA_PUT(skb, TCA_SKBEDIT_QUEUE_MAPPING,
-			sizeof(d->queue_mapping), &d->queue_mapping);
-	if (d->flags & SKBEDIT_F_MARK)
-		NLA_PUT(skb, TCA_SKBEDIT_MARK, sizeof(d->mark),
-			&d->mark);
+	if (nla_put(skb, TCA_SKBEDIT_PARMS, sizeof(opt), &opt))
+		goto nla_put_failure;
+	if ((d->flags & SKBEDIT_F_PRIORITY) &&
+	    nla_put(skb, TCA_SKBEDIT_PRIORITY, sizeof(d->priority),
+		    &d->priority))
+		goto nla_put_failure;
+	if ((d->flags & SKBEDIT_F_QUEUE_MAPPING) &&
+	    nla_put(skb, TCA_SKBEDIT_QUEUE_MAPPING,
+		    sizeof(d->queue_mapping), &d->queue_mapping))
+		goto nla_put_failure;
+	if ((d->flags & SKBEDIT_F_MARK) &&
+	    nla_put(skb, TCA_SKBEDIT_MARK, sizeof(d->mark),
+		    &d->mark))
+		goto nla_put_failure;
 	t.install = jiffies_to_clock_t(jiffies - d->tcf_tm.install);
 	t.lastuse = jiffies_to_clock_t(jiffies - d->tcf_tm.lastuse);
 	t.expires = jiffies_to_clock_t(d->tcf_tm.expires);
-	NLA_PUT(skb, TCA_SKBEDIT_TM, sizeof(t), &t);
+	if (nla_put(skb, TCA_SKBEDIT_TM, sizeof(t), &t))
+		goto nla_put_failure;
 	return skb->len;
 
 nla_put_failure:
@@ -197,7 +204,6 @@ static struct tc_action_ops act_skbedit_ops = {
 	.dump		=	tcf_skbedit_dump,
 	.cleanup	=	tcf_skbedit_cleanup,
 	.init		=	tcf_skbedit_init,
-	.walk		=	tcf_generic_walker,
 };
 
 MODULE_AUTHOR("Alexander Duyck, <alexander.h.duyck@intel.com>");

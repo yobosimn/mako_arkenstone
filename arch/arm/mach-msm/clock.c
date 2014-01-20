@@ -14,6 +14,7 @@
  *
  */
 
+<<<<<<< HEAD
 #include <linux/kernel.h>
 #include <linux/err.h>
 #include <linux/spinlock.h>
@@ -575,3 +576,17 @@ static int __init clock_late_init(void)
 	return ret;
 }
 late_initcall(clock_late_init);
+=======
+#include <linux/clk-provider.h>
+#include <linux/module.h>
+
+#include "clock.h"
+
+int clk_reset(struct clk *clk, enum clk_reset_action action)
+{
+	struct clk_hw *hw = __clk_get_hw(clk);
+	struct msm_clk *m = to_msm_clk(hw);
+	return m->reset(hw, action);
+}
+EXPORT_SYMBOL(clk_reset);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be

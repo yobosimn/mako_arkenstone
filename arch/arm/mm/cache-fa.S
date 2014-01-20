@@ -240,8 +240,13 @@ ENTRY(fa_dma_unmap_area)
 	mov	pc, lr
 ENDPROC(fa_dma_unmap_area)
 
+<<<<<<< HEAD
 	.globl  fa_flush_kern_cache_louis
 	.equ  fa_flush_kern_cache_louis, fa_flush_kern_cache_all
+=======
+	.globl	fa_flush_kern_cache_louis
+	.equ	fa_flush_kern_cache_louis, fa_flush_kern_cache_all
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	__INITDATA
 

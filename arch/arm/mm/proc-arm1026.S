@@ -337,8 +337,13 @@ ENTRY(arm1026_dma_unmap_area)
 	mov	pc, lr
 ENDPROC(arm1026_dma_unmap_area)
 
+<<<<<<< HEAD
 	.globl  arm1026_flush_kern_cache_louis
 	.equ  arm1026_flush_kern_cache_louis, arm1026_flush_kern_cache_all
+=======
+	.globl	arm1026_flush_kern_cache_louis
+	.equ	arm1026_flush_kern_cache_louis, arm1026_flush_kern_cache_all
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	@ define struct cpu_cache_fns (see <asm/cacheflush.h> and proc-macros.S)
 	define_cache_functions arm1026
@@ -395,9 +400,6 @@ ENTRY(cpu_arm1026_set_pte_ext)
 #endif
 #endif /* CONFIG_MMU */
 	mov	pc, lr
-
-
-	__CPUINIT
 
 	.type	__arm1026_setup, #function
 __arm1026_setup:

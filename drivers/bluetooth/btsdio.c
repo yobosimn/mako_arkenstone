@@ -157,10 +157,9 @@ static int btsdio_rx_packet(struct btsdio_data *data)
 
 	data->hdev->stat.byte_rx += len;
 
-	skb->dev = (void *) data->hdev;
 	bt_cb(skb)->pkt_type = hdr[3];
 
-	err = hci_recv_frame(skb);
+	err = hci_recv_frame(data->hdev, skb);
 	if (err < 0)
 		return err;
 
@@ -255,10 +254,14 @@ static int btsdio_flush(struct hci_dev *hdev)
 	return 0;
 }
 
-static int btsdio_send_frame(struct sk_buff *skb)
+static int btsdio_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
 {
+<<<<<<< HEAD
 	struct hci_dev *hdev = (struct hci_dev *) skb->dev;
 	struct btsdio_data *data = hdev->driver_data;
+=======
+	struct btsdio_data *data = hci_get_drvdata(hdev);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	BT_DBG("%s", hdev->name);
 
@@ -313,7 +316,7 @@ static int btsdio_probe(struct sdio_func *func,
 		tuple = tuple->next;
 	}
 
-	data = kzalloc(sizeof(*data), GFP_KERNEL);
+	data = devm_kzalloc(&func->dev, sizeof(*data), GFP_KERNEL);
 	if (!data)
 		return -ENOMEM;
 
@@ -324,10 +327,8 @@ static int btsdio_probe(struct sdio_func *func,
 	skb_queue_head_init(&data->txq);
 
 	hdev = hci_alloc_dev();
-	if (!hdev) {
-		kfree(data);
+	if (!hdev)
 		return -ENOMEM;
-	}
 
 	hdev->bus = HCI_SDIO;
 	hdev->driver_data = data;
@@ -352,7 +353,6 @@ static int btsdio_probe(struct sdio_func *func,
 	err = hci_register_dev(hdev);
 	if (err < 0) {
 		hci_free_dev(hdev);
-		kfree(data);
 		return err;
 	}
 

@@ -148,9 +148,9 @@ static void dtl1_write_wakeup(dtl1_info_t *info)
 	}
 
 	do {
-		register unsigned int iobase = info->p_dev->resource[0]->start;
+		unsigned int iobase = info->p_dev->resource[0]->start;
 		register struct sk_buff *skb;
-		register int len;
+		int len;
 
 		clear_bit(XMIT_WAKEUP, &(info->tx_state));
 
@@ -260,9 +260,8 @@ static void dtl1_receive(dtl1_info_t *info)
 				case 0x83:
 				case 0x84:
 					/* send frame to the HCI layer */
-					info->rx_skb->dev = (void *) info->hdev;
 					bt_cb(info->rx_skb)->pkt_type &= 0x0f;
-					hci_recv_frame(info->rx_skb);
+					hci_recv_frame(info->hdev, info->rx_skb);
 					break;
 				default:
 					/* unknown packet */
@@ -387,13 +386,13 @@ static int dtl1_hci_close(struct hci_dev *hdev)
 }
 
 
-static int dtl1_hci_send_frame(struct sk_buff *skb)
+static int dtl1_hci_send_frame(struct hci_dev *hdev, struct sk_buff *skb)
 {
-	dtl1_info_t *info;
-	struct hci_dev *hdev = (struct hci_dev *)(skb->dev);
+	dtl1_info_t *info = hci_get_drvdata(hdev);
 	struct sk_buff *s;
 	nsh_t nsh;
 
+<<<<<<< HEAD
 	if (!hdev) {
 		BT_ERR("Frame for unknown HCI device (hdev=NULL)");
 		return -ENODEV;
@@ -401,6 +400,8 @@ static int dtl1_hci_send_frame(struct sk_buff *skb)
 
 	info = (dtl1_info_t *)(hdev->driver_data);
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	switch (bt_cb(skb)->pkt_type) {
 	case HCI_COMMAND_PKT:
 		hdev->stat.cmd_tx++;
@@ -442,6 +443,7 @@ static int dtl1_hci_send_frame(struct sk_buff *skb)
 }
 
 
+<<<<<<< HEAD
 static void dtl1_hci_destruct(struct hci_dev *hdev)
 {
 }
@@ -453,6 +455,8 @@ static int dtl1_hci_ioctl(struct hci_dev *hdev, unsigned int cmd,  unsigned long
 }
 
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 /* ======================== Card services HCI interaction ======================== */
 
@@ -486,12 +490,19 @@ static int dtl1_open(dtl1_info_t *info)
 	hdev->driver_data = info;
 	SET_HCIDEV_DEV(hdev, &info->p_dev->dev);
 
+<<<<<<< HEAD
 	hdev->open     = dtl1_hci_open;
 	hdev->close    = dtl1_hci_close;
 	hdev->flush    = dtl1_hci_flush;
 	hdev->send     = dtl1_hci_send_frame;
 	hdev->destruct = dtl1_hci_destruct;
 	hdev->ioctl    = dtl1_hci_ioctl;
+=======
+	hdev->open  = dtl1_hci_open;
+	hdev->close = dtl1_hci_close;
+	hdev->flush = dtl1_hci_flush;
+	hdev->send  = dtl1_hci_send_frame;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	hdev->owner = THIS_MODULE;
 
@@ -564,7 +575,7 @@ static int dtl1_probe(struct pcmcia_device *link)
 	dtl1_info_t *info;
 
 	/* Create new info device */
-	info = kzalloc(sizeof(*info), GFP_KERNEL);
+	info = devm_kzalloc(&link->dev, sizeof(*info), GFP_KERNEL);
 	if (!info)
 		return -ENOMEM;
 
@@ -581,9 +592,14 @@ static void dtl1_detach(struct pcmcia_device *link)
 {
 	dtl1_info_t *info = link->priv;
 
+<<<<<<< HEAD
 	dtl1_release(link);
 
 	kfree(info);
+=======
+	dtl1_close(info);
+	pcmcia_disable_device(link);
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 static int dtl1_confcheck(struct pcmcia_device *p_dev, void *priv_data)
@@ -600,29 +616,36 @@ static int dtl1_confcheck(struct pcmcia_device *p_dev, void *priv_data)
 static int dtl1_config(struct pcmcia_device *link)
 {
 	dtl1_info_t *info = link->priv;
-	int i;
+	int ret;
 
 	/* Look for a generic full-sized window */
 	link->resource[0]->end = 8;
-	if (pcmcia_loop_config(link, dtl1_confcheck, NULL) < 0)
+	ret = pcmcia_loop_config(link, dtl1_confcheck, NULL);
+	if (ret)
 		goto failed;
 
-	i = pcmcia_request_irq(link, dtl1_interrupt);
-	if (i != 0)
+	ret = pcmcia_request_irq(link, dtl1_interrupt);
+	if (ret)
 		goto failed;
 
-	i = pcmcia_enable_device(link);
-	if (i != 0)
+	ret = pcmcia_enable_device(link);
+	if (ret)
 		goto failed;
 
-	if (dtl1_open(info) != 0)
+	ret = dtl1_open(info);
+	if (ret)
 		goto failed;
 
 	return 0;
 
 failed:
+<<<<<<< HEAD
 	dtl1_release(link);
 	return -ENODEV;
+=======
+	dtl1_detach(link);
+	return ret;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 
@@ -652,17 +675,4 @@ static struct pcmcia_driver dtl1_driver = {
 	.remove		= dtl1_detach,
 	.id_table	= dtl1_ids,
 };
-
-static int __init init_dtl1_cs(void)
-{
-	return pcmcia_register_driver(&dtl1_driver);
-}
-
-
-static void __exit exit_dtl1_cs(void)
-{
-	pcmcia_unregister_driver(&dtl1_driver);
-}
-
-module_init(init_dtl1_cs);
-module_exit(exit_dtl1_cs);
+module_pcmcia_driver(dtl1_driver);

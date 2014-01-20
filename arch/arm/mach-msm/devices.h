@@ -17,9 +17,15 @@
 #ifndef __ARCH_ARM_MACH_MSM_DEVICES_H
 #define __ARCH_ARM_MACH_MSM_DEVICES_H
 
+<<<<<<< HEAD
 #include <linux/clkdev.h>
 #include <linux/platform_device.h>
 #include "clock.h"
+=======
+extern struct platform_device msm_device_gpio_7201;
+extern struct platform_device msm_device_gpio_7x30;
+extern struct platform_device msm_device_gpio_8x50;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 void __init msm9615_device_init(void);
 void __init msm9615_map_io(void);
@@ -311,6 +317,7 @@ extern unsigned msm8627_num_footswitch;
 
 extern struct platform_device fsm_qfp_fuse_device;
 
+<<<<<<< HEAD
 extern struct platform_device fsm_xo_device;
 
 extern struct platform_device qfec_device;
@@ -318,6 +325,11 @@ extern struct platform_device qfec_device;
 extern struct platform_device msm_kgsl_3d0;
 extern struct platform_device msm_kgsl_2d0;
 extern struct platform_device msm_kgsl_2d1;
+=======
+extern struct platform_device msm_clock_7x01a;
+extern struct platform_device msm_clock_7x30;
+extern struct platform_device msm_clock_8x50;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 extern struct resource kgsl_3d0_resources_8960ab[];
 extern int kgsl_num_resources_8960ab;

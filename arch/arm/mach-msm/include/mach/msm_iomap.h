@@ -123,14 +123,24 @@
 /* Legacy single-target iomap */
 #if defined(CONFIG_ARCH_QSD8X50)
 #include "msm_iomap-8x50.h"
+<<<<<<< HEAD
 #elif defined(CONFIG_ARCH_MSM8X60)
 #include "msm_iomap-8x60.h"
 #elif defined(CONFIG_ARCH_FSM9XXX)
 #include "msm_iomap-fsm9xxx.h"
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #else
 #error "Target compiled without IO map\n"
 #endif
 
+<<<<<<< HEAD
 #endif
+=======
+/* Virtual addresses shared across all MSM targets. */
+#define MSM_CSR_BASE		IOMEM(0xE0001000)
+#define MSM_GPIO1_BASE		IOMEM(0xE0003000)
+#define MSM_GPIO2_BASE		IOMEM(0xE0004000)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 #endif

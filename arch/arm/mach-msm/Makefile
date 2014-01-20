@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 CFLAGS_scm.o :=$(call as-instr,.arch_extension sec,-DREQUIRES_SEC=1)
 
 obj-y += io.o dma.o memory.o
@@ -58,6 +59,15 @@ obj-$(CONFIG_MSM_JTAG_MM) +=  jtag-mm.o
 
 msm-etm-objs := etm.o
 obj-$(CONFIG_MSM_ETM) += msm-etm.o
+=======
+obj-y += timer.o
+obj-y += clock.o
+
+obj-$(CONFIG_MSM_VIC) += irq-vic.o
+
+obj-$(CONFIG_ARCH_MSM7X00A) += irq.o
+obj-$(CONFIG_ARCH_QSD8X50) += sirc.o
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 quiet_cmd_mkrpcsym = MKCAP   $@
       cmd_mkrpcsym = $(PERL) $(srctree)/$(src)/mkrpcsym.pl $< $@
@@ -66,6 +76,15 @@ target += smd_rpc_sym.c
 $(obj)/smd_rpc_sym.c: $(src)/smd_rpc_sym $(src)/mkrpcsym.pl
 	$(call if_changed,mkrpcsym)
 
+<<<<<<< HEAD
+=======
+obj-$(CONFIG_ARCH_MSM7X00A) += dma.o io.o
+obj-$(CONFIG_ARCH_MSM7X30) += dma.o io.o
+obj-$(CONFIG_ARCH_QSD8X50) += dma.o io.o
+
+obj-$(CONFIG_MSM_SMD) += smd.o smd_debug.o
+obj-$(CONFIG_MSM_SMD) += last_radio_log.o
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 obj-$(CONFIG_MSM_SCM) += scm.o scm-boot.o
 obj-$(CONFIG_MSM_SECURE_IO) += scm-io.o
 obj-$(CONFIG_MSM_PIL) += peripheral-loader.o
@@ -213,6 +232,7 @@ obj-$(CONFIG_MSM_LPASS_8960) += lpass-8960.o
 obj-$(CONFIG_MSM_WCNSS_SSR_8960) += wcnss-ssr-8960.o
 obj-$(CONFIG_MSM_GSS_SSR_8064) += gss-8064.o
 
+<<<<<<< HEAD
 ifdef CONFIG_CPU_IDLE
 	obj-$(CONFIG_ARCH_APQ8064) += cpuidle.o
 	obj-$(CONFIG_ARCH_MSM8960) += cpuidle.o
@@ -395,3 +415,13 @@ obj-$(CONFIG_MSM_CPU_PWRCTL) +=  msm_cpu_pwrctl.o
 obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 
 obj-$(CONFIG_MSM_CPUFREQ_LIMITER) += cpufreq_limit.o
+=======
+obj-$(CONFIG_MACH_TROUT) += board-trout.o board-trout-gpio.o board-trout-mmc.o devices-msm7x00.o
+obj-$(CONFIG_MACH_TROUT) += board-trout.o board-trout-gpio.o board-trout-mmc.o board-trout-panel.o devices-msm7x00.o
+obj-$(CONFIG_MACH_HALIBUT) += board-halibut.o devices-msm7x00.o
+obj-$(CONFIG_ARCH_MSM7X30) += board-msm7x30.o devices-msm7x30.o
+obj-$(CONFIG_ARCH_QSD8X50) += board-qsd8x50.o devices-qsd8x50.o
+obj-$(CONFIG_ARCH_MSM_DT) += board-dt.o
+obj-$(CONFIG_MSM_GPIOMUX) += gpiomux.o
+obj-$(CONFIG_ARCH_QSD8X50) += gpiomux-8x50.o
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be

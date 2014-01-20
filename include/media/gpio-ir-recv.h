@@ -14,9 +14,16 @@
 #define __GPIO_IR_RECV_H__
 
 struct gpio_ir_recv_platform_data {
+<<<<<<< HEAD
 	int gpio_nr;
 	bool active_low;
 	bool can_wakeup;
+=======
+	int		gpio_nr;
+	bool		active_low;
+	u64		allowed_protos;
+	const char	*map_name;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 };
 
 #endif /* __GPIO_IR_RECV_H__ */

@@ -6,12 +6,20 @@ obj-y			:= core.o bus.o dd.o syscore.o \
 			   attribute_container.o transport_class.o \
 			   topology.o sys.o
 obj-$(CONFIG_DEVTMPFS)	+= devtmpfs.o
+<<<<<<< HEAD
 obj-$(CONFIG_CMA) += dma-contiguous.o
 obj-y			+= power/
 obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
 obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
 obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf.o
 obj-$(CONFIG_GENLOCK) += genlock.o
+=======
+obj-$(CONFIG_DMA_CMA) += dma-contiguous.o
+obj-y			+= power/
+obj-$(CONFIG_HAS_DMA)	+= dma-mapping.o
+obj-$(CONFIG_HAVE_GENERIC_DMA_COHERENT) += dma-coherent.o
+obj-$(CONFIG_DMA_SHARED_BUFFER) += dma-buf.o reservation.o
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 obj-$(CONFIG_ISA)	+= isa.o
 obj-$(CONFIG_FW_LOADER)	+= firmware_class.o
 obj-$(CONFIG_NUMA)	+= node.o
@@ -22,6 +30,7 @@ endif
 obj-$(CONFIG_SYS_HYPERVISOR) += hypervisor.o
 obj-$(CONFIG_REGMAP)	+= regmap/
 obj-$(CONFIG_SOC_BUS) += soc.o
+obj-$(CONFIG_PINCTRL) += pinctrl.o
 
 obj-$(CONFIG_SYNC)	+= sync.o
 obj-$(CONFIG_SW_SYNC)	+= sw_sync.o

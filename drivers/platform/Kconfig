@@ -1,6 +1,14 @@
 if X86
 source "drivers/platform/x86/Kconfig"
 endif
+<<<<<<< HEAD
 if ARCH_MSM
 source "drivers/platform/msm/Kconfig"
 endif
+=======
+if GOLDFISH
+source "drivers/platform/goldfish/Kconfig"
+endif
+
+source "drivers/platform/chrome/Kconfig"
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be

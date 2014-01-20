@@ -91,11 +91,19 @@ static void close_delayed_work(struct work_struct *work)
 	dev_dbg(rtd->dev, "ASoC: pop wq checking: %s status: %s waiting: %s\n",
 		 codec_dai->driver->playback.stream_name,
 		 codec_dai->playback_active ? "active" : "inactive",
+<<<<<<< HEAD
 		     codec_dai->pop_wait ? "yes" : "no");
 
 	/* are we waiting on this codec DAI stream */
 	if (codec_dai->pop_wait == 1) {
 	  codec_dai->pop_wait = 0;
+=======
+		 rtd->pop_wait ? "yes" : "no");
+
+	/* are we waiting on this codec DAI stream */
+	if (rtd->pop_wait == 1) {
+		rtd->pop_wait = 0;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 		snd_soc_dapm_stream_event(rtd, SNDRV_PCM_STREAM_PLAYBACK,
 					  SND_SOC_DAPM_STREAM_STOP);
 	}
@@ -116,12 +124,20 @@ static int soc_compr_free(struct snd_compr_stream *cstream)
 	if (cstream->direction == SND_COMPRESS_PLAYBACK) {
 		cpu_dai->playback_active--;
 		codec_dai->playback_active--;
+<<<<<<< HEAD
 		snd_soc_dai_digital_mute(codec_dai, 1);
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	} else {
 		cpu_dai->capture_active--;
 		codec_dai->capture_active--;
 	}
 
+<<<<<<< HEAD
+=======
+	snd_soc_dai_digital_mute(codec_dai, 1, cstream->direction);
+
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	cpu_dai->active--;
 	codec_dai->active--;
 	codec->active--;
@@ -144,17 +160,31 @@ static int soc_compr_free(struct snd_compr_stream *cstream)
 		if (!rtd->pmdown_time || codec->ignore_pmdown_time ||
 		    rtd->dai_link->ignore_pmdown_time) {
 			snd_soc_dapm_stream_event(rtd,
+<<<<<<< HEAD
 					codec_dai->driver->playback.stream_name,
 					SND_SOC_DAPM_STREAM_STOP);
 		} else {
 			codec_dai->pop_wait = 1;
 			schedule_delayed_work(&rtd->delayed_work,
 				msecs_to_jiffies(rtd->pmdown_time));
+=======
+					SNDRV_PCM_STREAM_PLAYBACK,
+					SND_SOC_DAPM_STREAM_STOP);
+		} else {
+			rtd->pop_wait = 1;
+			queue_delayed_work(system_power_efficient_wq,
+					   &rtd->delayed_work,
+					   msecs_to_jiffies(rtd->pmdown_time));
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 		}
 	} else {
 		/* capture streams can be powered down now */
 		snd_soc_dapm_stream_event(rtd,
+<<<<<<< HEAD
 			codec_dai->driver->capture.stream_name,
+=======
+			SNDRV_PCM_STREAM_CAPTURE,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 			SND_SOC_DAPM_STREAM_STOP);
 	}
 
@@ -178,6 +208,7 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 			goto out;
 	}
 
+<<<<<<< HEAD
 	if (cstream->direction == SND_COMPRESS_PLAYBACK) {
 		switch (cmd) {
 		case SNDRV_PCM_TRIGGER_START:
@@ -187,6 +218,15 @@ static int soc_compr_trigger(struct snd_compr_stream *cstream, int cmd)
 			snd_soc_dai_digital_mute(codec_dai, 1);
 			break;
 		}
+=======
+	switch (cmd) {
+	case SNDRV_PCM_TRIGGER_START:
+		snd_soc_dai_digital_mute(codec_dai, 0, cstream->direction);
+		break;
+	case SNDRV_PCM_TRIGGER_STOP:
+		snd_soc_dai_digital_mute(codec_dai, 1, cstream->direction);
+		break;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	}
 
 out:
@@ -199,7 +239,10 @@ static int soc_compr_set_params(struct snd_compr_stream *cstream,
 {
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
 	struct snd_soc_platform *platform = rtd->platform;
+<<<<<<< HEAD
 	struct snd_soc_dai *codec_dai = rtd->codec_dai;
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	int ret = 0;
 
 	mutex_lock_nested(&rtd->pcm_mutex, rtd->pcm_subclass);
@@ -222,12 +265,24 @@ static int soc_compr_set_params(struct snd_compr_stream *cstream,
 			goto err;
 	}
 
+<<<<<<< HEAD
 	snd_soc_dapm_stream_event(rtd,
 				codec_dai->driver->playback.stream_name,
 				SND_SOC_DAPM_STREAM_START);
 
 	/* cancel any delayed stream shutdown that is pending */
 	codec_dai->pop_wait = 0;
+=======
+	if (cstream->direction == SND_COMPRESS_PLAYBACK)
+		snd_soc_dapm_stream_event(rtd, SNDRV_PCM_STREAM_PLAYBACK,
+					SND_SOC_DAPM_STREAM_START);
+	else
+		snd_soc_dapm_stream_event(rtd, SNDRV_PCM_STREAM_CAPTURE,
+					SND_SOC_DAPM_STREAM_START);
+
+	/* cancel any delayed stream shutdown that is pending */
+	rtd->pop_wait = 0;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	mutex_unlock(&rtd->pcm_mutex);
 
 	cancel_delayed_work_sync(&rtd->delayed_work);
@@ -318,7 +373,11 @@ static int soc_compr_pointer(struct snd_compr_stream *cstream,
 }
 
 static int soc_compr_copy(struct snd_compr_stream *cstream,
+<<<<<<< HEAD
 			  const char __user *buf, size_t count)
+=======
+			  char __user *buf, size_t count)
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 {
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
 	struct snd_soc_platform *platform = rtd->platform;
@@ -333,7 +392,11 @@ static int soc_compr_copy(struct snd_compr_stream *cstream,
 	return ret;
 }
 
+<<<<<<< HEAD
 static int sst_compr_set_metadata(struct snd_compr_stream *cstream,
+=======
+static int soc_compr_set_metadata(struct snd_compr_stream *cstream,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 				struct snd_compr_metadata *metadata)
 {
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
@@ -346,7 +409,11 @@ static int sst_compr_set_metadata(struct snd_compr_stream *cstream,
 	return ret;
 }
 
+<<<<<<< HEAD
 static int sst_compr_get_metadata(struct snd_compr_stream *cstream,
+=======
+static int soc_compr_get_metadata(struct snd_compr_stream *cstream,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 				struct snd_compr_metadata *metadata)
 {
 	struct snd_soc_pcm_runtime *rtd = cstream->private_data;
@@ -363,8 +430,13 @@ static struct snd_compr_ops soc_compr_ops = {
 	.open		= soc_compr_open,
 	.free		= soc_compr_free,
 	.set_params	= soc_compr_set_params,
+<<<<<<< HEAD
 	.set_metadata   = sst_compr_set_metadata,
 	.get_metadata	= sst_compr_get_metadata,
+=======
+	.set_metadata   = soc_compr_set_metadata,
+	.get_metadata	= soc_compr_get_metadata,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	.get_params	= soc_compr_get_params,
 	.trigger	= soc_compr_trigger,
 	.pointer	= soc_compr_pointer,
@@ -387,7 +459,18 @@ int soc_new_compress(struct snd_soc_pcm_runtime *rtd, int num)
 	/* check client and interface hw capabilities */
 	snprintf(new_name, sizeof(new_name), "%s %s-%d",
 			rtd->dai_link->stream_name, codec_dai->name, num);
+<<<<<<< HEAD
 	direction = SND_COMPRESS_PLAYBACK;
+=======
+
+	if (codec_dai->driver->playback.channels_min)
+		direction = SND_COMPRESS_PLAYBACK;
+	else if (codec_dai->driver->capture.channels_min)
+		direction = SND_COMPRESS_CAPTURE;
+	else
+		return -EINVAL;
+
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	compr = kzalloc(sizeof(*compr), GFP_KERNEL);
 	if (compr == NULL) {
 		snd_printk(KERN_ERR "Cannot allocate compr\n");

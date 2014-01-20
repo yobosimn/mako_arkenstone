@@ -1,10 +1,21 @@
 if ARCH_MSM
 
+<<<<<<< HEAD
 menu "MSM SoC Type"
+=======
+comment "Qualcomm MSM SoC Type"
+	depends on ARCH_MSM_DT
+
+choice
+	prompt "Qualcomm MSM SoC Type"
+	default ARCH_MSM7X00A
+	depends on !ARCH_MSM_DT
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config ARCH_MSM7X01A
 	bool "MSM7x00A / MSM7x01A"
 	select ARCH_MSM_ARM11
+<<<<<<< HEAD
 	select MSM_VIC
 	select CPU_V6
 	select GPIO_MSM_V1
@@ -39,10 +50,19 @@ config ARCH_MSM7X27
 	select DONT_MAP_HOLE_AFTER_MEMBANK0
 	select MIGHT_HAVE_CACHE_L2X0
 	select MSM_MODEM_RESTART
+=======
+	select CPU_V6
+	select GPIO_MSM_V1
+	select MACH_TROUT if !MACH_HALIBUT
+	select MSM_PROC_COMM
+	select MSM_SMD
+	select MSM_SMD_PKG3
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config ARCH_MSM7X30
 	bool "MSM7x30"
 	select ARCH_MSM_SCORPION
+<<<<<<< HEAD
 	select MSM_VIC
 	select CPU_V7
 	select GPIO_MSM_V1
@@ -66,10 +86,20 @@ config ARCH_MSM7X30
 	select MSM_PM2 if PM
 	select HOLES_IN_ZONE if SPARSEMEM
 	select MSM_MODEM_RESTART
+=======
+	select CPU_V7
+	select GPIO_MSM_V1
+	select MACH_MSM7X30_SURF # if !
+	select MSM_GPIOMUX
+	select MSM_PROC_COMM
+	select MSM_SMD
+	select MSM_VIC
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config ARCH_QSD8X50
 	bool "QSD8X50"
 	select ARCH_MSM_SCORPION
+<<<<<<< HEAD
 	select MSM_VIC
 	select CPU_V7
 	select GPIO_MSM_V1
@@ -134,6 +164,24 @@ config ARCH_MSM8X60
 	select ARCH_INLINE_WRITE_UNLOCK_IRQRESTORE
 	select CPU_HAS_L2_PMU
 	select MSM_SPM_V1
+=======
+	select CPU_V7
+	select GPIO_MSM_V1
+	select MACH_QSD8X50_SURF if !MACH_QSD8X50A_ST1_5
+	select MSM_GPIOMUX
+	select MSM_PROC_COMM
+	select MSM_SMD
+	select MSM_VIC
+
+endchoice
+
+config ARCH_MSM8X60
+	bool "MSM8X60"
+	select ARM_GIC
+	select CPU_V7
+	select GPIO_MSM_V2
+	select HAVE_SMP
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	select MSM_SCM if SMP
 	select MULTI_IRQ_HANDLER
 	select MSM_MULTIMEDIA_USE_ION
@@ -142,6 +190,7 @@ config ARCH_MSM8X60
 
 config ARCH_MSM8960
 	bool "MSM8960"
+<<<<<<< HEAD
 	select ARCH_MSM_KRAITMP
 	select ARM_GIC
 	select CPU_V7
@@ -267,9 +316,12 @@ config ARCH_MPQ8092
 	bool "MPQ8092"
 	select ARCH_MSM_KRAITMP
 	select GPIO_MSM_V3
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	select ARM_GIC
 	select MULTI_IRQ_HANDLER
 	select CPU_V7
+<<<<<<< HEAD
 	select MSM_GPIOMUX
 	select MAY_HAVE_SPARSE_IRQ
 	select SPARSE_IRQ
@@ -281,6 +333,10 @@ config ARCH_MSM8226
 	select GPIO_MSM_V3
 	select ARM_GIC
 	select CPU_V7
+=======
+	select HAVE_SMP
+	select GPIO_MSM_V2
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	select MSM_SCM if SMP
 	select MSM_GPIOMUX
 	select MULTI_IRQ_HANDLER
@@ -358,6 +414,7 @@ config ARCH_MSM9625
 	select GPIO_MSM_V3
 endmenu
 
+<<<<<<< HEAD
 choice
 	prompt "MSM SoC Revision"
 	default MSM_SOC_REV_NONE
@@ -369,6 +426,13 @@ config MSM_SOC_REV_A
 	bool "Rev. A"
 	select ARCH_MSM7X27A if ARCH_MSM7X27
 endchoice
+=======
+config ARCH_MSM_DT
+	def_bool y
+	depends on (ARCH_MSM8X60 || ARCH_MSM8960)
+	select SPARSE_IRQ
+	select USE_OF
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config MSM_KRAIT_TBB_ABORT_HANDLER
 	bool "Krait TBB/TBH data abort handler"
@@ -387,6 +451,7 @@ config  ARCH_MSM_ARM11
 
 config  ARCH_MSM_SCORPION
 	bool
+<<<<<<< HEAD
 
 config  ARCH_MSM_KRAIT
 	bool
@@ -395,6 +460,8 @@ config  ARCH_MSM_KRAIT
 config  MSM_SMP
 	select HAVE_SMP
 	bool
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config  ARCH_MSM_SCORPIONMP
 	select ARCH_MSM_SCORPION
@@ -403,11 +470,15 @@ config  ARCH_MSM_SCORPIONMP
 	select MSM_JTAG if CORESIGHT_ETM
 	bool
 
+<<<<<<< HEAD
 config  ARCH_MSM_KRAITMP
 	select ARCH_MSM_KRAIT
 	select MSM_SMP
 	select HAVE_ARCH_HAS_CURRENT_TIMER
 	select MSM_JTAG if CORESIGHT_ETM
+=======
+config  ARCH_MSM_SCORPION
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	bool
 	select HAVE_HW_BRKPT_RESERVED_RW_ACCESS
 
@@ -435,6 +506,7 @@ config ARCH_MSM7X27A
 config  MSM_VIC
 	bool
 
+<<<<<<< HEAD
 config MSM_RPM
 	bool "Resource Power Manager"
 	select MSM_MPM
@@ -484,6 +556,10 @@ config MSM_ADM3
 	bool
 
 menu "MSM Board Selection"
+=======
+menu "Qualcomm MSM Board Type"
+	depends on !ARCH_MSM_DT
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config MACH_HALIBUT
 	depends on ARCH_MSM7X01A
@@ -683,13 +759,19 @@ config MACH_QSD8X50_SURF
 
 config MACH_QSD8X50_FFA
 	depends on ARCH_QSD8X50
+<<<<<<< HEAD
 	depends on MSM_SOC_REV_NONE
 	depends on MSM_STACKED_MEMORY
 	default y
 	bool "QSD8x50 FFA"
+=======
+	bool "QSD8x50A ST1.5"
+	select MSM_SOC_REV_A
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 	help
 	  Support for the Qualcomm QSD8x50 FFA eval board.
 
+<<<<<<< HEAD
 config MACH_MSM7X25_SURF
 	depends on ARCH_MSM7X25
 	depends on !MSM_STACKED_MEMORY
@@ -906,6 +988,8 @@ config MACH_FSM9XXX_SURF
 config MACH_MSM_DUMMY
 	bool "NONE (No device)"
 
+=======
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 endmenu
 
 source "arch/arm/mach-msm/lge/Kconfig"
@@ -935,6 +1019,7 @@ config PHYS_OFFSET
 	default "0x40200000" if ARCH_MSM8X60
 	default "0x10000000"
 
+<<<<<<< HEAD
 config KERNEL_MSM_CONTIG_MEM_REGION
 	bool "Enable in-kernel contiguous memory region"
 	default y if ARCH_MSM8X60
@@ -984,6 +1069,13 @@ config MSM_HAS_DEBUG_UART_HS
 	bool
 	help
 	  Say Y here if high speed MSM UART is present.
+=======
+config MSM_GPIOMUX
+	bool
+	depends on !ARCH_MSM_DT
+	help
+	  Support for MSM V1 TLMM GPIOMUX architecture.
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 config MSM_HAS_DEBUG_UART_HS_V14
 	bool

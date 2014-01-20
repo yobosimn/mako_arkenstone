@@ -23,6 +23,29 @@
 
 #define MGMT_INDEX_NONE			0xFFFF
 
+<<<<<<< HEAD
+=======
+#define MGMT_STATUS_SUCCESS		0x00
+#define MGMT_STATUS_UNKNOWN_COMMAND	0x01
+#define MGMT_STATUS_NOT_CONNECTED	0x02
+#define MGMT_STATUS_FAILED		0x03
+#define MGMT_STATUS_CONNECT_FAILED	0x04
+#define MGMT_STATUS_AUTH_FAILED		0x05
+#define MGMT_STATUS_NOT_PAIRED		0x06
+#define MGMT_STATUS_NO_RESOURCES	0x07
+#define MGMT_STATUS_TIMEOUT		0x08
+#define MGMT_STATUS_ALREADY_CONNECTED	0x09
+#define MGMT_STATUS_BUSY		0x0a
+#define MGMT_STATUS_REJECTED		0x0b
+#define MGMT_STATUS_NOT_SUPPORTED	0x0c
+#define MGMT_STATUS_INVALID_PARAMS	0x0d
+#define MGMT_STATUS_DISCONNECTED	0x0e
+#define MGMT_STATUS_NOT_POWERED		0x0f
+#define MGMT_STATUS_CANCELLED		0x10
+#define MGMT_STATUS_INVALID_INDEX	0x11
+#define MGMT_STATUS_RFKILLED		0x12
+
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 struct mgmt_hdr {
 	__le16 opcode;
 	__le16 index;
@@ -44,6 +67,22 @@ struct mgmt_rp_read_index_list {
 /* Reserve one extra byte for names in management messages so that they
  * are always guaranteed to be nul-terminated */
 #define MGMT_MAX_NAME_LENGTH		(HCI_MAX_NAME_LENGTH + 1)
+<<<<<<< HEAD
+=======
+#define MGMT_MAX_SHORT_NAME_LENGTH	(HCI_MAX_SHORT_NAME_LENGTH + 1)
+
+#define MGMT_SETTING_POWERED		0x00000001
+#define MGMT_SETTING_CONNECTABLE	0x00000002
+#define MGMT_SETTING_FAST_CONNECTABLE	0x00000004
+#define MGMT_SETTING_DISCOVERABLE	0x00000008
+#define MGMT_SETTING_PAIRABLE		0x00000010
+#define MGMT_SETTING_LINK_SECURITY	0x00000020
+#define MGMT_SETTING_SSP		0x00000040
+#define MGMT_SETTING_BREDR		0x00000080
+#define MGMT_SETTING_HS			0x00000100
+#define MGMT_SETTING_LE			0x00000200
+#define MGMT_SETTING_ADVERTISING	0x00000400
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 #define MGMT_OP_READ_INFO		0x0004
 struct mgmt_rp_read_info {
@@ -277,6 +316,32 @@ struct mgmt_cp_le_cancel_create_conn {
 	bdaddr_t	bdaddr;
 } __packed;
 
+#define MGMT_OP_SET_DEVICE_ID		0x0028
+struct mgmt_cp_set_device_id {
+	__le16	source;
+	__le16	vendor;
+	__le16	product;
+	__le16	version;
+} __packed;
+#define MGMT_SET_DEVICE_ID_SIZE		8
+
+#define MGMT_OP_SET_ADVERTISING		0x0029
+
+#define MGMT_OP_SET_BREDR		0x002A
+
+#define MGMT_OP_SET_STATIC_ADDRESS	0x002B
+struct mgmt_cp_set_static_address {
+	bdaddr_t bdaddr;
+} __packed;
+#define MGMT_SET_STATIC_ADDRESS_SIZE	6
+
+#define MGMT_OP_SET_SCAN_PARAMS		0x002C
+struct mgmt_cp_set_scan_params {
+	__le16	interval;
+	__le16	window;
+} __packed;
+#define MGMT_SET_SCAN_PARAMS_SIZE	4
+
 #define MGMT_EV_CMD_COMPLETE		0x0001
 struct mgmt_ev_cmd_complete {
 	__le16 opcode;
@@ -318,10 +383,22 @@ struct mgmt_ev_connected {
 	__u8 le;
 } __packed;
 
+<<<<<<< HEAD
 #define MGMT_EV_DISCONNECTED		0x000C
 struct mgmt_ev_disconnected {
 	bdaddr_t bdaddr;
 	__u8     reason;
+=======
+#define MGMT_DEV_DISCONN_UNKNOWN	0x00
+#define MGMT_DEV_DISCONN_TIMEOUT	0x01
+#define MGMT_DEV_DISCONN_LOCAL_HOST	0x02
+#define MGMT_DEV_DISCONN_REMOTE		0x03
+
+#define MGMT_EV_DEVICE_DISCONNECTED	0x000C
+struct mgmt_ev_device_disconnected {
+	struct mgmt_addr_info addr;
+	__u8	reason;
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 } __packed;
 
 #define MGMT_EV_CONNECT_FAILED		0x000D
@@ -357,12 +434,20 @@ struct mgmt_ev_local_name_changed {
 
 #define MGMT_EV_DEVICE_FOUND		0x0012
 struct mgmt_ev_device_found {
+<<<<<<< HEAD
 	bdaddr_t bdaddr;
 	__u8 dev_class[3];
 	__s8 rssi;
 	__u8 le;
 	__u8 type;
 	__u8 eir[HCI_MAX_EIR_LENGTH];
+=======
+	struct mgmt_addr_info addr;
+	__s8	rssi;
+	__le32	flags;
+	__le16	eir_len;
+	__u8	eir[0];
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 } __packed;
 
 #define MGMT_EV_REMOTE_NAME		0x0013
@@ -418,4 +503,11 @@ struct mgmt_ev_le_conn_params {
 	__u16 interval;
 	__u16 latency;
 	__u16 timeout;
+} __packed;
+
+#define MGMT_EV_PASSKEY_NOTIFY		0x0017
+struct mgmt_ev_passkey_notify {
+	struct mgmt_addr_info addr;
+	__le32	passkey;
+	__u8	entered;
 } __packed;

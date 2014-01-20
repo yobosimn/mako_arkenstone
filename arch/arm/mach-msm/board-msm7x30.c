@@ -13,7 +13,6 @@
 
 #include <linux/kernel.h>
 #include <linux/irq.h>
-#include <linux/gpio.h>
 #include <linux/platform_device.h>
 #include <linux/delay.h>
 #include <linux/bootmem.h>
@@ -6600,6 +6599,7 @@ static int tsc2007_get_pendown_state(void)
 {
 	int rc;
 
+<<<<<<< HEAD
 	rc = gpio_get_value(TSC2007_TS_PEN_INT);
 	if (rc < 0) {
 		pr_err("%s: MSM GPIO %d read failed\n", __func__,
@@ -6680,6 +6680,16 @@ static int isa1200_power(int vreg_on)
 	rc = vreg_on ?
 		regulator_bulk_enable(ARRAY_SIZE(regs_isa1200), regs_isa1200) :
 		regulator_bulk_disable(ARRAY_SIZE(regs_isa1200), regs_isa1200);
+=======
+#include <mach/msm_iomap.h>
+#include <mach/dma.h>
+
+#include <mach/vreg.h>
+#include "devices.h"
+#include "gpiomux.h"
+#include "proc_comm.h"
+#include "common.h"
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 
 	if (rc) {
 		pr_err("%s: could not %sable regulators: %d\n",
@@ -7216,6 +7226,7 @@ static struct memtype_reserve msm7x30_reserve_table[] __initdata = {
 	},
 };
 
+<<<<<<< HEAD
 unsigned long size;
 unsigned long msm_ion_camera_size;
 
@@ -7228,6 +7239,13 @@ static void fix_sizes(void)
 
 #ifdef CONFIG_ION_MSM
 	msm_ion_camera_size = size;
+=======
+static struct platform_device *devices[] __initdata = {
+	&msm_clock_7x30,
+	&msm_device_gpio_7x30,
+#if defined(CONFIG_SERIAL_MSM) || defined(CONFIG_MSM_SERIAL_DEBUGGER)
+        &msm_device_uart2,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 #endif
 }
 
@@ -7346,6 +7364,7 @@ static void __init msm7x30_map_io(void)
 {
 	msm_shared_ram_phys = 0x00100000;
 	msm_map_msm7x30_io();
+<<<<<<< HEAD
 	if (socinfo_init() < 0)
 		printk(KERN_ERR "%s: socinfo_init() failed!\n",
 		       __func__);
@@ -7367,6 +7386,13 @@ static void __init msm7x30_fixup(struct tag *tags, char **cmdline,
 				break;
 		}
 	}
+=======
+}
+
+static void __init msm7x30_init_late(void)
+{
+	smd_debugfs_init();
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 }
 
 MACHINE_START(MSM7X30_SURF, "QCT MSM7X30 SURF")
@@ -7375,10 +7401,15 @@ MACHINE_START(MSM7X30_SURF, "QCT MSM7X30 SURF")
 	.reserve = msm7x30_reserve,
 	.init_irq = msm7x30_init_irq,
 	.init_machine = msm7x30_init,
+<<<<<<< HEAD
 	.timer = &msm_timer,
 	.init_early = msm7x30_init_early,
 	.handle_irq = vic_handle_irq,
 	.fixup = msm7x30_fixup,
+=======
+	.init_late = msm7x30_init_late,
+	.init_time	= msm7x30_timer_init,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 MACHINE_END
 
 MACHINE_START(MSM7X30_FFA, "QCT MSM7X30 FFA")
@@ -7411,10 +7442,15 @@ MACHINE_START(MSM8X55_SURF, "QCT MSM8X55 SURF")
 	.reserve = msm7x30_reserve,
 	.init_irq = msm7x30_init_irq,
 	.init_machine = msm7x30_init,
+<<<<<<< HEAD
 	.timer = &msm_timer,
 	.init_early = msm7x30_init_early,
 	.handle_irq = vic_handle_irq,
 	.fixup = msm7x30_fixup,
+=======
+	.init_late = msm7x30_init_late,
+	.init_time	= msm7x30_timer_init,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 MACHINE_END
 
 MACHINE_START(MSM8X55_FFA, "QCT MSM8X55 FFA")
@@ -7445,8 +7481,13 @@ MACHINE_START(MSM8X55_SVLTE_FFA, "QCT MSM8X55 SVLTE FFA")
 	.reserve = msm7x30_reserve,
 	.init_irq = msm7x30_init_irq,
 	.init_machine = msm7x30_init,
+<<<<<<< HEAD
 	.timer = &msm_timer,
 	.init_early = msm7x30_init_early,
 	.handle_irq = vic_handle_irq,
 	.fixup = msm7x30_fixup,
+=======
+	.init_late = msm7x30_init_late,
+	.init_time	= msm7x30_timer_init,
+>>>>>>> d8ec26d7f8287f5788a494f56e8814210f0e64be
 MACHINE_END
