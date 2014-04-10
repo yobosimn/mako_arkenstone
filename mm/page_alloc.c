@@ -198,20 +198,11 @@ static char * const zone_names[MAX_NR_ZONES] = {
 	 "Movable",
 };
 
-/*
- * Try to keep at least this much lowmem free.  Do not allow normal
- * allocations below this point, only high priority ones. Automatically
- * tuned according to the amount of memory in the system.
- */
-int min_free_kbytes = 1024;
+int min_free_kbytes = 5752;
+int wmark_min_kbytes = 5752;
+int wmark_low_kbytes = 7190;
+int wmark_high_kbytes = 8628;
 int min_free_order_shift = 1;
-
-/*
- * Extra memory for the system to try freeing. Used to temporarily
- * free memory, to make space for new workloads. Anyone can allocate
- * down to the min watermarks controlled by min_free_kbytes above.
- */
-int extra_free_kbytes = 0;
 
 static unsigned long __meminitdata nr_kernel_pages;
 static unsigned long __meminitdata nr_all_pages;
@@ -4445,7 +4436,7 @@ static inline void setup_usemap(struct pglist_data *pgdat, struct zone *zone,
 #ifdef CONFIG_HUGETLB_PAGE_SIZE_VARIABLE
 
 /* Initialise the number of pages represented by NR_PAGEBLOCK_BITS */
-static inline void __init set_pageblock_order(void)
+void __init set_pageblock_order(void)
 {
 	unsigned int order;
 
@@ -4473,7 +4464,7 @@ static inline void __init set_pageblock_order(void)
  * include/linux/pageblock-flags.h for the values of pageblock_order based on
  * the kernel config
  */
-static inline void set_pageblock_order(void)
+void __init set_pageblock_order(void)
 {
 }
 
@@ -5172,14 +5163,80 @@ static void setup_per_zone_lowmem_reserve(void)
 		}
 	}
 
+	wmark_min_kbytes = min_free_kbytes;
+	wmark_low_kbytes = min_free_kbytes + (min_free_kbytes >> 2);
+	wmark_high_kbytes = min_free_kbytes + (min_free_kbytes >> 1);
+
 	/* update totalreserve_pages */
 	calculate_totalreserve_pages();
+}
+
+/**
+ * setup_per_zone_wmark - called when wmark_{min|low|high}_kbytes changes
+ *
+ * The watermark[min,low,high] values for each zone are set with respect
+ * to wmark_min_kbytes, wmark_low_kbytes and wmark_high_kbytes.
+ */
+void setup_per_zone_wmark(int wmark)
+{
+	unsigned long pages;
+	unsigned long lowmem_pages = 0;
+	struct zone *zone;
+	unsigned long flags;
+
+	switch (wmark) {
+	case WMARK_MIN:
+		pages = wmark_min_kbytes >> (PAGE_SHIFT - 10);
+		min_free_kbytes = wmark_min_kbytes;
+		break;
+	case WMARK_LOW:
+		pages = wmark_low_kbytes >> (PAGE_SHIFT - 10);
+		break;
+	case WMARK_HIGH:
+		pages = wmark_high_kbytes >> (PAGE_SHIFT - 10);
+		break;
+	default:
+		return;
+	}
+
+	/* Calculate total number of !ZONE_HIGHMEM pages */
+	for_each_zone(zone) {
+		if (!is_highmem(zone))
+			lowmem_pages += zone->present_pages;
+	}
+
+	for_each_zone(zone) {
+		u64 tmp;
+
+		spin_lock_irqsave(&zone->lock, flags);
+		tmp = (u64)pages * zone->present_pages;
+		do_div(tmp, lowmem_pages);
+
+		if (wmark == WMARK_MIN && is_highmem(zone)) {
+			int min_pages;
+
+			min_pages = zone->present_pages / 1024;
+			if (min_pages < SWAP_CLUSTER_MAX)
+				min_pages = SWAP_CLUSTER_MAX;
+			if (min_pages > 128)
+				min_pages = 128;
+			zone->watermark[wmark] = min_pages;
+		} else {
+			zone->watermark[wmark] = tmp;
+		}
+
+		if (wmark == WMARK_MIN)
+			setup_zone_migrate_reserve(zone);
+		spin_unlock_irqrestore(&zone->lock, flags);
+	}
+
+	if (wmark == WMARK_HIGH)
+		calculate_totalreserve_pages();
 }
 
 static void __setup_per_zone_wmarks(void)
 {
 	unsigned long pages_min = min_free_kbytes >> (PAGE_SHIFT - 10);
-	unsigned long pages_low = extra_free_kbytes >> (PAGE_SHIFT - 10);
 	unsigned long lowmem_pages = 0;
 	struct zone *zone;
 	unsigned long flags;
@@ -5191,14 +5248,11 @@ static void __setup_per_zone_wmarks(void)
 	}
 
 	for_each_zone(zone) {
-		u64 min, low;
+		u64 tmp;
 
 		spin_lock_irqsave(&zone->lock, flags);
-		min = (u64)pages_min * zone->present_pages;
-		do_div(min, lowmem_pages);
-		low = (u64)pages_low * zone->present_pages;
-		do_div(low, vm_total_pages);
-
+		tmp = (u64)pages_min * zone->present_pages;
+		do_div(tmp, lowmem_pages);
 		if (is_highmem(zone)) {
 			/*
 			 * __GFP_HIGH and PF_MEMALLOC allocations usually don't
@@ -5222,13 +5276,11 @@ static void __setup_per_zone_wmarks(void)
 			 * If it's a lowmem zone, reserve a number of pages
 			 * proportionate to the zone's size.
 			 */
-			zone->watermark[WMARK_MIN] = min;
+			zone->watermark[WMARK_MIN] = tmp;
 		}
 
-		zone->watermark[WMARK_LOW] = min_wmark_pages(zone) +
-                                        low + (min >> 2);
-                zone->watermark[WMARK_HIGH] = min_wmark_pages(zone) +
-                                        low + (min >> 1);
+		zone->watermark[WMARK_LOW]  = min_wmark_pages(zone) + (tmp >> 2);
+		zone->watermark[WMARK_HIGH] = min_wmark_pages(zone) + (tmp >> 1);
 
 		zone->watermark[WMARK_MIN] += cma_wmark_pages(zone);
 		zone->watermark[WMARK_LOW] += cma_wmark_pages(zone);
@@ -5345,7 +5397,7 @@ module_init(init_per_zone_wmark_min)
 /*
  * min_free_kbytes_sysctl_handler - just a wrapper around proc_dointvec() so 
  *	that we can call two helper functions whenever min_free_kbytes
- *	or extra_free_kbytes changes.
+ *	changes.
  */
 int min_free_kbytes_sysctl_handler(ctl_table *table, int write, 
 	void __user *buffer, size_t *length, loff_t *ppos)
@@ -5354,6 +5406,45 @@ int min_free_kbytes_sysctl_handler(ctl_table *table, int write,
 	if (write)
 		setup_per_zone_wmarks();
 	return 0;
+}
+
+int wmark_min_kbytes_sysctl_handler(ctl_table *table, int write,
+	void __user *buffer, size_t *length, loff_t *ppos)
+{
+	int ret;
+
+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
+	if (ret < 0 || !write)
+		return ret;
+
+	setup_per_zone_wmark(WMARK_MIN);
+	return ret;
+}
+
+int wmark_low_kbytes_sysctl_handler(ctl_table *table, int write,
+	void __user *buffer, size_t *length, loff_t *ppos)
+{
+	int ret;
+
+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
+	if (ret < 0 || !write)
+		return ret;
+
+	setup_per_zone_wmark(WMARK_LOW);
+	return ret;
+}
+
+int wmark_high_kbytes_sysctl_handler(ctl_table *table, int write,
+	void __user *buffer, size_t *length, loff_t *ppos)
+{
+	int ret;
+
+	ret = proc_dointvec_minmax(table, write, buffer, length, ppos);
+	if (ret < 0 || !write)
+		return ret;
+
+	setup_per_zone_wmark(WMARK_HIGH);
+	return ret;
 }
 
 #ifdef CONFIG_NUMA

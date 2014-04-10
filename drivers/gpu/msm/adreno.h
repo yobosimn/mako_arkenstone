@@ -187,8 +187,6 @@ struct adreno_device {
 	struct adreno_dispatcher dispatcher;
 	struct kgsl_memdesc pwron_fixup;
 	unsigned int pwron_fixup_dwords;
-
-	struct work_struct input_work;
 };
 
 /**
@@ -516,6 +514,8 @@ int adreno_perfcounter_put(struct adreno_device *adreno_dev,
 	unsigned int groupid, unsigned int countable, unsigned int flags);
 
 int adreno_soft_reset(struct kgsl_device *device);
+
+int adreno_a3xx_pwron_fixup_init(struct adreno_device *adreno_dev);
 
 static inline int adreno_is_a200(struct adreno_device *adreno_dev)
 {

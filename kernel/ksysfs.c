@@ -220,4 +220,3 @@ exit:
 }
 
 core_initcall(ksysfs_init);
-
