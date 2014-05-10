@@ -1923,11 +1923,10 @@ static int touch_probe(struct i2c_client *client,
 		ret = request_threaded_irq(client->irq, touch_irq_handler,
 				NULL,
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-		ts->pdata->role->irqflags | IRQF_ONESHOT | IRQF_NO_SUSPEND,
+                        IRQF_TRIGGER_FALLING | IRQF_ONESHOT | IRQF_NO_SUSPEND, client->name, ts);
 #else
-		ts->pdata->role->irqflags | IRQF_ONESHOT,
+                        IRQF_TRIGGER_FALLING | IRQF_ONESHOT, client->name, ts);
 #endif
-			client->name, ts);
 
 		if (ret < 0) {
 			TOUCH_ERR_MSG("request_irq failed. use polling mode\n");
