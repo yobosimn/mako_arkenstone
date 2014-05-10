@@ -1759,6 +1759,9 @@ static ssize_t show_boosted_time(struct lge_touch_data *ts, char *buf)
 
 	ret = sprintf(buf, "%d\n", boosted_time);
 
+	return ret;
+}
+
 static ssize_t store_boosted_time(struct lge_touch_data *ts, const char *buf,
 			     size_t count)
 {
