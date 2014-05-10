@@ -15,8 +15,6 @@
 
 #define PM8XXX_PWRKEY_DEV_NAME "pm8xxx-pwrkey"
 
-#include <linux/input.h>
-
 /**
  * struct pm8xxx_pwrkey_platform_data - platform data for pwrkey driver
  * @pull up:  power on register control for pull up/down configuration
@@ -36,7 +34,5 @@ struct pm8xxx_pwrkey_platform_data  {
 	u32  kpd_trigger_delay_us;
 	u32  wakeup;
 };
-
-void power_on_display(struct input_dev *input_device);
 
 #endif /* __PMIC8XXX_PWRKEY_H__ */
