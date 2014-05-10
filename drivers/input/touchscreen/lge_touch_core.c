@@ -2106,7 +2106,7 @@ static void touch_early_suspend(struct early_suspend *h)
 	        release_all_ts_event(ts);
 
 	        touch_power_cntl(ts, ts->pdata->role->suspend_pwr);
-#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+#ifdef CONFIG_TOUCHSCREEN_SWEEP2WAKE
         } else {
                 enable_irq_wake(ts->client->irq);
 		release_all_ts_event(ts);
