@@ -48,29 +48,6 @@
 #include <linux/input/pmic8xxx-pwrkey.h>
 #endif
 
-#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-static bool prevent_sleep_irq_wake_enabled = false;
-static void prevent_sleep_enable_irq_wake(unsigned int irq){
-	if(!prevent_sleep_irq_wake_enabled){
-		prevent_sleep_irq_wake_enabled = true;
-		enable_irq_wake(irq);
-		pr_info("irq_wake enabled\n");
-	}
-	else
-		pr_info("irq_wake already enabled\n");
-}
-
-static void prevent_sleep_disable_irq_wake(unsigned int irq){
-	if(prevent_sleep_irq_wake_enabled){
-		prevent_sleep_irq_wake_enabled = false;
-		disable_irq_wake(irq);
-		pr_info("irq_wake disabled\n");
-	}
-	else
-		pr_info("irq_wake already disabled\n");
-}
-#endif
-
 struct touch_device_driver*     touch_device_func;
 struct workqueue_struct*        touch_wq;
 
@@ -2188,7 +2165,7 @@ static void touch_early_suspend(struct early_suspend *h)
 	        touch_power_cntl(ts, ts->pdata->role->suspend_pwr);
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
         } else {
-		prevent_sleep_enable_irq_wake(ts->client->irq);
+                enable_irq_wake(ts->client->irq);
 		release_all_ts_event(ts);
 	}
 #endif
@@ -2244,7 +2221,7 @@ static void touch_late_resume(struct early_suspend *h)
 
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
 	} else {
-		prevent_sleep_disable_irq_wake(ts->client->irq);
+		disable_irq_wake(ts->client->irq);
 		if (s2w_error) {
 			s2w_error = false;
 			TOUCH_ERR_MSG("soft resetting device\n");
