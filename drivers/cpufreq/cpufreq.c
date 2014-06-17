@@ -321,8 +321,13 @@ EXPORT_SYMBOL_GPL(cpufreq_notify_transition);
 void cpufreq_notify_utilization(struct cpufreq_policy *policy,
 		unsigned int util)
 {
-	if (policy)
-		policy->util = util;
+	if (!policy)
+		return;
+
+	if (util > 25 && policy->util < 100)
+		policy->util++;
+	else if (policy->util > 0)
+		policy->util--;
 }
 
 /*********************************************************************
